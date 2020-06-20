@@ -54,8 +54,10 @@ class MyApp extends StatelessWidget {
       supportedLocales: [Locale('en', 'US'), Locale('tr', 'TR')],
       home: FutureBuilder(future: Future.microtask(
         () async {
+
           await Hive.initFlutter('delilerleislamiyet');
           ClassBuilder.registerClasses();
+          
         },
       ), builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done)
