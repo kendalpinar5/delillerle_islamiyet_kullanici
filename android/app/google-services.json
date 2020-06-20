@@ -1,0 +1,219 @@
+{
+  "project_info": {
+    "project_number": "1018069581364",
+    "firebase_url": "https://delillerle-islamiyet.firebaseio.com",
+    "project_id": "delillerle-islamiyet",
+    "storage_bucket": "delillerle-islamiyet.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1018069581364:android:7fcd6000f1d55f10e61461",
+        "android_client_info": {
+          "package_name": "com.di.delillerleislamiyet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1018069581364-c933f6g6goekbepuoaji9i9lbsj8f2pr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfZ9g1uwR1v_foVkIdOCHpLl3NP-QmNHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1018069581364-c933f6g6goekbepuoaji9i9lbsj8f2pr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1018069581364-95frn25pgd4psd0e16ukvh5p26jva7ma.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "comsas"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1018069581364:android:01ea71d7b76cdf37e61461",
+        "android_client_info": {
+          "package_name": "com.imamgazalikalplerinkesfi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1018069581364-fupuv6cjkd59q7qq7pegcpi2r37hbatc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.imamgazalikalplerinkesfi",
+            "certificate_hash": "79e8ee76b682d541c26c5465462226d5d2d14d01"
+          }
+        },
+        {
+          "client_id": "1018069581364-4ld67386gcjd8qfn4qfk5abeb23qh8go.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.imamgazalikalplerinkesfi",
+            "certificate_hash": "b1d6a83f28ec52ef414acb102456aa15af234339"
+          }
+        },
+        {
+          "client_id": "1018069581364-dqejhe5flq0uoj6a5mmrgvb576ssvkk0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.imamgazalikalplerinkesfi",
+            "certificate_hash": "091720bf9323f791aeaf7fb5652ee6f73b70a21c"
+          }
+        },
+        {
+          "client_id": "1018069581364-c933f6g6goekbepuoaji9i9lbsj8f2pr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfZ9g1uwR1v_foVkIdOCHpLl3NP-QmNHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1018069581364-c933f6g6goekbepuoaji9i9lbsj8f2pr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1018069581364-95frn25pgd4psd0e16ukvh5p26jva7ma.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "comsas"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1018069581364:android:d2228baf61383c41e61461",
+        "android_client_info": {
+          "package_name": "com.sb.delillerleislamiyet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1018069581364-ik3vinmo4flk5i4efmikg3vpkcghr371.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sb.delillerleislamiyet",
+            "certificate_hash": "5f3c501ed4c8082cbacda610c7aaea76adbeb03c"
+          }
+        },
+        {
+          "client_id": "1018069581364-r8110kepd6f2rqqak5be4mqjpbo99vpn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sb.delillerleislamiyet",
+            "certificate_hash": "564ffce2671a75f9a15e742528018a995360ed04"
+          }
+        },
+        {
+          "client_id": "1018069581364-bku2datsraho29mfg171429dm2s9eori.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sb.delillerleislamiyet",
+            "certificate_hash": "79e8ee76b682d541c26c5465462226d5d2d14d01"
+          }
+        },
+        {
+          "client_id": "1018069581364-2rul7dep0se55nhh3i0m9dkosico963j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sb.delillerleislamiyet",
+            "certificate_hash": "b1d6a83f28ec52ef414acb102456aa15af234339"
+          }
+        },
+        {
+          "client_id": "1018069581364-2lqqff9el9q180e4mtq5rud2odu25pui.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sb.delillerleislamiyet",
+            "certificate_hash": "091720bf9323f791aeaf7fb5652ee6f73b70a21c"
+          }
+        },
+        {
+          "client_id": "1018069581364-c933f6g6goekbepuoaji9i9lbsj8f2pr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfZ9g1uwR1v_foVkIdOCHpLl3NP-QmNHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1018069581364-c933f6g6goekbepuoaji9i9lbsj8f2pr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1018069581364-95frn25pgd4psd0e16ukvh5p26jva7ma.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "comsas"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1018069581364:android:422b41ceee03e149e61461",
+        "android_client_info": {
+          "package_name": "com.sb.delillerleislamiyetadmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1018069581364-c933f6g6goekbepuoaji9i9lbsj8f2pr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfZ9g1uwR1v_foVkIdOCHpLl3NP-QmNHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1018069581364-c933f6g6goekbepuoaji9i9lbsj8f2pr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1018069581364-95frn25pgd4psd0e16ukvh5p26jva7ma.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "comsas"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
