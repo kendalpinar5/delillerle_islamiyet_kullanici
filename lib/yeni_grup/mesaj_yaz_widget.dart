@@ -101,8 +101,7 @@ class _MesajYazWidgetState extends State<MesajYazWidget> {
                     builder: (c, v, _) {
                       return Icon(
                         Icons.send,
-                        color:
-                            _mesaj.value.length > 0 ? Renk.yesil : Renk.siyah,
+                        color: _mesaj.value.length > 0 ? Renk.yesil : Renk.siyah,
                       );
                     },
                   ),

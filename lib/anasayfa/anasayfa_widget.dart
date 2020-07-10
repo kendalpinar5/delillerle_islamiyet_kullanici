@@ -1,3 +1,4 @@
+import 'package:delillerleislamiyet/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:delillerleislamiyet/anasayfa/tabs/akis_sayfasi/akis_sayfasi.dart';
 import 'package:delillerleislamiyet/anasayfa/tabs/bildirimler/bildirimler.dart';
@@ -22,138 +23,137 @@ class _AnasayfaWidgetState extends State<AnasayfaWidget> {
 
   bool bit = true;
 
-  
   @override
   void initState() {
     super.initState();
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(100.0),
-          child: AppBar(
-            backgroundColor: Renk.beyaz,
-            leading: IconButton(
-              icon: Icon(
-                Icons.menu,
-                color: Renk.wpKoyu,
-              ),
-              onPressed: widget.menum,
-            ),
-            title: Row(
-              children: <Widget>[
-                Spacer(),
-                Text(
-                  'Delillerle',
-                  style: TextStyle(color: Renk.wpKoyu),
-                ),
-                Container(
-                  width: 40,
-                  height: 40,
-                  margin: EdgeInsets.symmetric(horizontal: 5),
-                  padding: const EdgeInsets.all(3.0),
-                  decoration: BoxDecoration(
-                      color: Renk.beyaz,
-                      border: Border.all(color: Renk.wpKoyu, width: 1),
-                      borderRadius: BorderRadius.circular(50)),
-                  child: Image.asset(
-                    'assets/images/icon.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                Text(
-                  'İslamiyet',
-                  style: TextStyle(color: Renk.wpKoyu),
-                ),
-                Spacer()
-              ],
-            ),
-            centerTitle: true,
-            actions: <Widget>[
-              IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => ProfilSyf()),
-                  );
-                },
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(100.0),
+            child: AppBar(
+              backgroundColor: Renk.beyaz,
+              leading: IconButton(
                 icon: Icon(
-                  Icons.account_circle,
+                  Icons.menu,
                   color: Renk.wpKoyu,
                 ),
-                tooltip: Yazi.profil,
+                onPressed: widget.menum,
               ),
-            ],
-            bottom: ColoredTabBar(
-              Renk.beyaz,
-              TabBar(
-                labelColor: Renk.wpKoyu,
-                unselectedLabelColor: Renk.siyah.withOpacity(0.5),
-                indicatorColor: Renk.wpKoyu,
-                indicatorWeight: 2.0,
-                tabs: <Widget>[
-                  Tab(
-                    child: FittedBox(
-                      child: Text(
-                        "AKIŞ",
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                        maxLines: 1,
-                      ),
+              title: Row(
+                children: <Widget>[
+                  Spacer(),
+                  Text(
+                    'Delillerle',
+                    style: TextStyle(color: Renk.wpKoyu),
+                  ),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    margin: EdgeInsets.symmetric(horizontal: 5),
+                    padding: const EdgeInsets.all(3.0),
+                    decoration: BoxDecoration(
+                        color: Renk.beyaz,
+                        border: Border.all(color: Renk.wpKoyu, width: 1),
+                        borderRadius: BorderRadius.circular(50)),
+                    child: Image.asset(
+                      'assets/images/icon.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
-                  Tab(
-                    child: FittedBox(
-                      child: Text(
-                        'Takip',
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                        maxLines: 1,
-                      ),
-                    ),
+                  Text(
+                    'İslamiyet',
+                    style: TextStyle(color: Renk.wpKoyu),
                   ),
-                  Tab(
-                    child: FittedBox(
-                      child: Text(
-                        'Bildirimler',
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                        maxLines: 1,
-                      ),
-                    ),
-                  ),
-                  Tab(
-                    child: FittedBox(
-                      child: Text(
-                        'Guruplar',
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                        maxLines: 1,
-                      ),
-                    ),
-                  ),
+                  Spacer()
                 ],
+              ),
+              centerTitle: true,
+              actions: <Widget>[
+                IconButton(
+                  onPressed: () {
+                    Logger.log(tag, message: Renk.wp.value.toString());
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ProfilSyf()),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.account_circle,
+                    color: Renk.wpKoyu,
+                  ),
+                  tooltip: Yazi.profil,
+                ),
+              ],
+              bottom: ColoredTabBar(
+                Renk.beyaz,
+                TabBar(
+                  labelColor: Renk.wpKoyu,
+                  unselectedLabelColor: Renk.siyah.withOpacity(0.5),
+                  indicatorColor: Renk.wpKoyu,
+                  indicatorWeight: 2.0,
+                  tabs: <Widget>[
+                    Tab(
+                      child: FittedBox(
+                        child: Text(
+                          "AKIŞ",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
+                    Tab(
+                      child: FittedBox(
+                        child: Text(
+                          'Takip',
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
+                    
+                    Tab(
+                      child: FittedBox(
+                        child: Text(
+                          'Bildirimler',
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
+                    Tab(
+                      child: FittedBox(
+                        child: Text(
+                          'Guruplar',
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        body:  Container(
-                  child: TabBarView(
-                    children: <Widget>[
-                      AkisSayfasi(),
-                      Takip(),
-                      Bildirimler(
-                      ),
-                      Gruplar(),
-                      //Ajandam(),
-                      //YaziTura(),
-                    ],
-                  ),
-                )
+          body: Container(
+            child: TabBarView(
+              children: <Widget>[
+                AkisSayfasi(),
+                Takip(),
+                Bildirimler(),
+                Gruplar(),
+                //Ajandam(),
+                //YaziTura(),
+              ],
+            ),
+          )
 
-
-        /*  floatingActionButton: FloatingActionButton(
+          /*  floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
               context, MaterialPageRoute(builder: (_) => AkisVeriEkle()));
@@ -165,7 +165,7 @@ class _AnasayfaWidgetState extends State<AnasayfaWidget> {
       floatingActionButtonLocation: Fonksiyon.admin()
           ? FloatingActionButtonLocation.centerFloat
           : FloatingActionButtonLocation.endFloat, */
-      ),
+          ),
     );
   }
 }

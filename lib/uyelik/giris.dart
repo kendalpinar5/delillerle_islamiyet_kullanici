@@ -66,6 +66,7 @@ class _GirisYapSyfState extends State<GirisYapSyf> {
                   email: ar.user.email ?? '',
                   telefon: ar.user.phoneNumber ?? '',
                   resim: ar.user.photoUrl ?? '',
+                  kayitTarih: Timestamp.now().toString(),
                   arkadaslar: ['nwxqtKsJgiPjM8rfeBhh9s7vKfl1', 'l6MqVDFmYGNdwoAUsFdsoFZyOsn1'],
                   arkIstekleri: [],
                   gonderiSayisi: 0);

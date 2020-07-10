@@ -12,7 +12,6 @@ class ArkadasListesi extends StatefulWidget {
 
 class _ArkadasListesiState extends State<ArkadasListesi> {
   final Firestore _db = Firestore.instance;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
   List<Uye> _uyeler = [];
 
@@ -68,6 +67,24 @@ class _ArkadasListesiState extends State<ArkadasListesi> {
     setState(() {});
   }
 
+  _resimAc(String resim) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.all(0),
+          content: Container(
+            color: Renk.siyah,
+            child: Image.network(
+              resim,
+              fit: BoxFit.contain,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     _arkCek();
@@ -84,7 +101,7 @@ class _ArkadasListesiState extends State<ArkadasListesi> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Renk.gGri19,
+      backgroundColor: Renk.gGri12,
       appBar: AppBar(
         backgroundColor: Renk.beyaz,
         title: Text(
@@ -117,48 +134,62 @@ class _ArkadasListesiState extends State<ArkadasListesi> {
                           width: double.maxFinite,
                           child: Row(
                             children: <Widget>[
-                              InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) => ProfilSyfEx(
-                                                gUye: _uyeler[i],
-                                              )));
-                                },
-                                child: Row(
-                                  children: <Widget>[
-                                    Container(
+                              Row(
+                                children: <Widget>[
+                                  InkWell(
+                                    onTap: () {
+                                      _resimAc(_uyeler[i].resim);
+                                    },
+                                    child: Container(
                                       height: 50,
                                       width: 50,
                                       margin: EdgeInsets.only(right: 5),
                                       decoration: BoxDecoration(
-                                        border: Border.all(color: Renk.wpAcik, width: 2),
-                                        borderRadius: BorderRadius.circular(50),
+                                        border: Border.all(color: Renk.wpAcik, width: 1),
+                                        borderRadius: BorderRadius.circular(20),
                                         image:
                                             DecorationImage(image: NetworkImage(_uyeler[i].resim), fit: BoxFit.cover),
                                       ),
                                     ),
-                                    Container(
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) => ProfilSyfEx(
+                                                    gUye: _uyeler[i],
+                                                  )));
+                                    },
+                                    child: Container(
                                       child: Text(
                                         _uyeler[i].gorunenIsim,
                                         style: TextStyle(color: Renk.siyah, fontWeight: FontWeight.bold),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                               Spacer(),
-                              FlatButton(
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                                  color: Renk.eKirmizi,
-                                  child: Icon(
-                                    Icons.delete,
-                                    color: Renk.beyaz,
-                                  ),
-                                  onPressed: () {
-                                    _arkCikar(_uyeler[i]);
-                                  })
+                              Container(
+                                height: 35,
+                                width: 35,
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Renk.gKirmizi, width: 1),
+                                    borderRadius: BorderRadius.circular(50)),
+                                margin: EdgeInsets.only(right: 10),
+                                child: FlatButton(
+                                    padding: EdgeInsets.all(0),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                                    child: Icon(
+                                      Icons.delete,
+                                      color: Renk.gKirmizi,
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      _arkCikar(_uyeler[i]);
+                                    }),
+                              )
                             ],
                           ),
                         )

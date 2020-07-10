@@ -6,12 +6,12 @@ import 'package:delillerleislamiyet/model/kullanici.dart';
 import 'package:delillerleislamiyet/utils/fonksiyonlar.dart';
 import 'package:delillerleislamiyet/utils/renkler.dart';
 
+
 class AkisBenzerWidget extends StatefulWidget {
   final AkisVeri veri;
   final GlobalKey<ScaffoldState> scaffoldKey;
 
-  const AkisBenzerWidget({Key key, this.veri, this.scaffoldKey})
-      : super(key: key);
+  const AkisBenzerWidget({Key key, this.veri, this.scaffoldKey}) : super(key: key);
   @override
   _AkisBenzerWidgetState createState() => _AkisBenzerWidgetState();
 }
@@ -34,27 +34,20 @@ class _AkisBenzerWidgetState extends State<AkisBenzerWidget> {
     {8: "Genel"},
   ];
   Future _kCek() async {
-    DocumentSnapshot ds =
-        await _db.collection('uyeler').document(_veri.ekleyen).get();
+    DocumentSnapshot ds = await _db.collection('uyeler').document(_veri.ekleyen).get();
     _eUye = Uye.fromMap(ds.data);
     if (!_gittim) setState(() {});
   }
 
   Future veriGuncelle() async {
-    await _db
-        .collection('akis_verileri')
-        .document(_veri.id)
-        .updateData(_veri.toMap());
+    await _db.collection('akis_verileri').document(_veri.id).updateData(_veri.toMap());
     setState(() {});
   }
 
   Future okunma() async {
     _veri.okunma++;
 
-    await _db
-        .collection('akis_verileri')
-        .document(_veri.id)
-        .updateData(_veri.toMap());
+    await _db.collection('akis_verileri').document(_veri.id).updateData(_veri.toMap());
     setState(() {});
   }
 
@@ -69,10 +62,8 @@ class _AkisBenzerWidgetState extends State<AkisBenzerWidget> {
   void initState() {
     _veri = widget.veri;
     _kCek();
-    if (_veri.begenenler.contains(Fonksiyon.uye.uid))
-      Fonksiyon.begenenVeriler.add(_veri.id);
-    if (_veri.begenmeyenler.contains(Fonksiyon.uye.uid))
-      Fonksiyon.begenmeyenVeriler.add(_veri.id);
+    if (_veri.begenenler.contains(Fonksiyon.uye.uid)) Fonksiyon.begenenVeriler.add(_veri.id);
+    if (_veri.begenmeyenler.contains(Fonksiyon.uye.uid)) Fonksiyon.begenmeyenVeriler.add(_veri.id);
 
     super.initState();
   }
@@ -139,15 +130,13 @@ class _AkisBenzerWidgetState extends State<AkisBenzerWidget> {
                           )
                         : Container(
                             width: double.maxFinite,
-                            margin:
-                                EdgeInsets.only(left: 8.0, right: 8.0, top: 10),
+                            margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 10),
                             alignment: Alignment.centerLeft,
                             child: Text(
                               _veri.baslik,
                               textAlign: TextAlign.left,
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                              maxLines: 3,
+                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                             ),
                           ),
                     Spacer(),
@@ -166,19 +155,16 @@ class _AkisBenzerWidgetState extends State<AkisBenzerWidget> {
                                   child: Text(
                                     _veri.okunma.toString(),
                                     style: TextStyle(
-                                        color: Renk.gGri.withOpacity(0.8),
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 13),
+                                        color: Renk.gGri.withOpacity(0.8), fontStyle: FontStyle.normal, fontSize: 13),
                                   ),
                                 ),
+                                
                                 Container(
                                   margin: EdgeInsets.only(left: 5.0),
                                   child: Text(
                                     'görüntülenme',
                                     style: TextStyle(
-                                        color: Renk.gGri.withOpacity(0.8),
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 12),
+                                        color: Renk.gGri.withOpacity(0.8), fontStyle: FontStyle.normal, fontSize: 12),
                                   ),
                                 ),
                                 Container(
@@ -203,9 +189,7 @@ class _AkisBenzerWidgetState extends State<AkisBenzerWidget> {
                                         .replaceAll('(', '')
                                         .replaceAll(')', ''),
                                     style: TextStyle(
-                                        color: Renk.gGri.withOpacity(0.8),
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 12),
+                                        color: Renk.gGri.withOpacity(0.8), fontStyle: FontStyle.normal, fontSize: 12),
                                   ),
                                 ),
                               ],

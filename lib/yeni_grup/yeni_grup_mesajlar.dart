@@ -63,10 +63,7 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
       _bil.aciklama = mesaj;
       _bil.tarih = Timestamp.now();
 
-      await Firestore.instance
-          .collection('bildirimler')
-          .add(_bil.toMap())
-          .then((onValue) {
+      await Firestore.instance.collection('bildirimler').add(_bil.toMap()).then((onValue) {
         Firestore.instance
             .collection('bildirimler')
             .document(onValue.documentID)
@@ -74,11 +71,8 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
       });
     }
 
-    List sesliJetonlar =
-        _grup.sesliler.where((test) => test != Fonksiyon.fcmToken).toList();
-    List sessizJetonlar =
-        _grup.sessizler.where((test) => test != Fonksiyon.fcmToken).toList();
-
+    List sesliJetonlar = _grup.sesliler.where((test) => test != Fonksiyon.fcmToken).toList();
+    List sessizJetonlar = _grup.sessizler.where((test) => test != Fonksiyon.fcmToken).toList();
 
     Map mapBody = <String, dynamic>{
       "registration_ids": sessizJetonlar,
@@ -106,8 +100,7 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
         body: jsonEncode(mapBody),
         encoding: Encoding.getByName('utf-8'),
       );
-      Logger.log(tag,
-          message: "cevap kodu: ${res.statusCode} cevap: ${res.body}");
+      Logger.log(tag, message: "cevap kodu: ${res.statusCode} cevap: ${res.body}");
       Logger.log(tag, message: res.body);
     } catch (e) {
       Logger.log(tag, message: "hata oluştu: $e");
@@ -127,8 +120,7 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
         body: jsonEncode(mapBody),
         encoding: Encoding.getByName('utf-8'),
       );
-      Logger.log(tag,
-          message: "cevap kodu: ${res.statusCode} cevap: ${res.body}");
+      Logger.log(tag, message: "cevap kodu: ${res.statusCode} cevap: ${res.body}");
       Logger.log(tag, message: res.body);
     } catch (e) {
       Logger.log(tag, message: "hata oluştu: $e");
@@ -235,8 +227,7 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
             "grupmesajresimleri/${Random().nextInt(10000000).toString()}.jpg",
           );
 
-      ImageProperties properties =
-          await FlutterNativeImage.getImageProperties(_file.path);
+      ImageProperties properties = await FlutterNativeImage.getImageProperties(_file.path);
       File compressedFile = await FlutterNativeImage.compressImage(
         _file.path,
         quality: 80,
@@ -308,8 +299,7 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
   }
 
   void _msjSikayetEt(Mesaj msj) {
-    _silYetki = (Fonksiyon.uye.rutbe > 15 || msj.yazan == Fonksiyon.uye.uid) &&
-        msj.metin != "Bu mesaj silindi";
+    _silYetki = (Fonksiyon.uye.rutbe > 15 || msj.yazan == Fonksiyon.uye.uid) && msj.metin != "Bu mesaj silindi";
     showDialog(
       context: context,
       builder: (c) {
@@ -336,11 +326,8 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
   }
 
   Future _msjIslemYap(Mesaj msj) async {
-    DocumentReference docRef = _firestore
-        .collection('gruplar')
-        .document(_grup.id)
-        .collection('mesajlar')
-        .document(msj.id);
+    DocumentReference docRef =
+        _firestore.collection('gruplar').document(_grup.id).collection('mesajlar').document(msj.id);
 
     if (_silYetki)
       await docRef.updateData({
@@ -373,8 +360,7 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
       }
     });
 
-    KeyboardVisibilityNotification()
-        .addNewListener(onChange: (v) => _klavye = v);
+    KeyboardVisibilityNotification().addNewListener(onChange: (v) => _klavye = v);
 
     super.initState();
   }
@@ -390,9 +376,7 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _klavye
-          ? () => FocusScope.of(context).requestFocus(FocusNode())
-          : null,
+      onTap: _klavye ? () => FocusScope.of(context).requestFocus(FocusNode()) : null,
       child: Scaffold(
         key: _scaffoldKey,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -428,8 +412,7 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
                           Mesaj msj = Mesaj.fromMap(ds.data, ds.documentID);
 
                           return InkWell(
-                            onLongPress:
-                                _klavye ? null : () => _msjSikayetEt(msj),
+                            onLongPress: _klavye ? null : () => _msjSikayetEt(msj),
                             child: GrupMesajWidget(
                               ekran: _ekran,
                               resmiGor: _resmiGor,
@@ -496,8 +479,7 @@ class _YeniGrupMesajlarState extends State<YeniGrupMesajlar> {
                         ), */
                       ],
                     ),
-                    if (!_grup.baslik.toLowerCase().contains('duyuru') ||
-                        Fonksiyon.uye.rutbe > 10)
+                    if (!_grup.baslik.toLowerCase().contains('duyuru') || Fonksiyon.uye.rutbe > 10)
                       Expanded(
                         child: MesajYazWidget(
                           grupID: _grup.id,

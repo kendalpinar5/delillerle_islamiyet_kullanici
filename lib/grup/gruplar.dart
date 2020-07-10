@@ -140,6 +140,7 @@ class _GruplarState extends State<Gruplar> {
 
   @override
   void initState() {
+    Logger.log(tag, message: Fonksiyon.uye.gruplar.length.toString());
     _kontrol();
     super.initState();
   }
@@ -175,7 +176,27 @@ class _GruplarState extends State<Gruplar> {
                             "${veri[index].documentID}",
                           );
 
-                          return GrupWidget(grup: grup, kutu: _kutu);
+                          if (!Fonksiyon.uye.gruplar.contains(veri[index].documentID))
+                            return GrupWidget(
+                              grup: grup,
+                              kutu: _kutu,
+                              yenile: _getGruplar,
+                            );
+
+                          if (Fonksiyon.uye.gruplar.contains(veri[index].documentID))
+                            return Container(
+                              margin: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Renk.wp, width: 3),
+                                  borderRadius: BorderRadius.circular(20)),
+                              child: GrupWidget(
+                                grup: grup,
+                                kutu: _kutu,
+                                yenile: _getGruplar,
+                              ),
+                            );
+
+                          return LinearProgressIndicator();
                         },
                         staggeredTileBuilder: (int index) => StaggeredTile.fit(2),
                       );

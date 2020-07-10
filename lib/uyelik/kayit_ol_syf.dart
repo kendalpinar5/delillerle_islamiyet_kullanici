@@ -58,10 +58,14 @@ class _KayitOlSyfState extends State<KayitOlSyf> {
         DocumentSnapshot veri = await _eslestir(ar.user.uid);
 
         if (veri.exists) {
+
           Fonksiyon.uye = Uye.fromMap(veri.data);
           widget.kutu.put('kullanici', Fonksiyon.uye.toMap());
           Navigator.popUntil(context, ModalRoute.withName('/'));
+
         } else {
+
+
           Uye uye = Uye(
               uid: ar.user.uid,
               gorunenIsim: "$_isim $_soyisim",
@@ -81,6 +85,8 @@ class _KayitOlSyfState extends State<KayitOlSyf> {
           widget.kutu.put('kullanici', Fonksiyon.uye.toMap());
 
           Navigator.popUntil(context, ModalRoute.withName('/'));
+
+          
         }
       }
     } on PlatformException catch (e) {
@@ -130,7 +136,7 @@ class _KayitOlSyfState extends State<KayitOlSyf> {
             child: Center(
               child: CircularProgressIndicator(
                 valueColor: new AlwaysStoppedAnimation<Color>(
-                  Renk.gKirmizi,
+                  Renk.wp,
                 ),
               ),
             ),

@@ -27,7 +27,6 @@ class _GununSozuState extends State<GununSozu> {
 
   bool _islem = false;
 
-
   double _sY = 0;
   double _sO = 0;
 
@@ -105,7 +104,10 @@ class _GununSozuState extends State<GununSozu> {
         child: Column(
           children: <Widget>[
             for (Soz soz in sozler)
-              SozWidget(soz: soz, scaffoldKey: _scaffoldKey),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: SozWidget(soz: soz, scaffoldKey: _scaffoldKey),
+              ),
           ],
         ),
       ),

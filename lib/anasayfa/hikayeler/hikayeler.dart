@@ -20,55 +20,38 @@ class Hikayeler extends StatefulWidget {
 class _HikayelerState extends State<Hikayeler> {
   final String tag = "AkisSayfasi";
 
-  bool _gittim = false;
-  final ScrollController _scrollController = ScrollController();
   List _hikayeler = [];
   DocumentSnapshot sonDoc;
   Hikaye hikayem;
-  bool _islem = false;
 
-  double _sY = 0;
-  double _sO = 0;
-
-  _hikaye() {
+  /*  _hikaye() {
     _islem = true;
     if (!_gittim) setState(() {});
     widget.hikayeGetir();
     _islem = false;
     setState(() {});
   }
-
+ */
   @override
   void initState() {
     _hikayeler = widget.gHikaye;
-    _scrollController.addListener(() {
-      _sO = _scrollController.offset;
-      _sY = _scrollController.position.maxScrollExtent;
-
-      if (_sO + 100 > _sY && !_islem) {
-        _hikaye();
-      }
-    });
 
     super.initState();
   }
 
   @override
   void dispose() {
-    _gittim = true;
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 8),
+      margin: EdgeInsets.symmetric(vertical: 5),
       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       color: Renk.beyaz,
       width: MediaQuery.of(context).size.width,
       child: SingleChildScrollView(
-        controller: _scrollController,
         scrollDirection: Axis.horizontal,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -82,10 +65,10 @@ class _HikayelerState extends State<Hikayeler> {
                 ),
               ),
               child: Container(
-                  height: MediaQuery.of(context).size.height / 4,
+                  height: MediaQuery.of(context).size.height / 4.0,
                   width: MediaQuery.of(context).size.width / 3.5,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(30),
                     image: DecorationImage(
                         image: NetworkImage(
                           Fonksiyon.uye.resim,
@@ -132,24 +115,24 @@ class _HikayelerState extends State<Hikayeler> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 for (int i = 0; i < _hikayeler.length; i++)
-                  FadeAnimation(
-                    1,
-                    HikayeWidget(
-                      gHik: Hikaye.fromMap(_hikayeler[i]
-                          .map((k, v) =>
-                              k == 'tarih' ? MapEntry(k, Timestamp.fromMillisecondsSinceEpoch(v)) : MapEntry(k, v))
-                          .cast<String, dynamic>()),
+                  if (Hikaye.fromMap(_hikayeler[i]
+                              .map((k, v) =>
+                                  k == 'tarih' ? MapEntry(k, Timestamp.fromMillisecondsSinceEpoch(v)) : MapEntry(k, v))
+                              .cast<String, dynamic>())
+                          .resim
+                          .length >
+                      0)
+                    FadeAnimation(
+                      1,
+                      HikayeWidget(
+                        gHik: Hikaye.fromMap(_hikayeler[i]
+                            .map((k, v) =>
+                                k == 'tarih' ? MapEntry(k, Timestamp.fromMillisecondsSinceEpoch(v)) : MapEntry(k, v))
+                            .cast<String, dynamic>()),
+                      ),
                     ),
-                  ),
               ],
             ),
-            _islem
-                ? Center(
-                    child: CircularProgressIndicator(backgroundColor: Renk.beyaz),
-                  )
-                : SizedBox(
-                    width: 100,
-                  )
           ],
         ),
       ),

@@ -23,6 +23,7 @@ class Fonksiyon {
   static final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
   static final FirebaseMessaging fcm = FirebaseMessaging();
   static GenelKontrol genelKontrol;
+  static int temaRengi = 4279405694;
 
   static bool anasayfa = true;
   static List tanidiklarim = [];
@@ -108,8 +109,7 @@ class Fonksiyon {
   }
 
   static Future _kullaniciIslemYap(String engelUye) async {
-    DocumentReference docRef =
-        firestore.collection('engellenenler').document(engelUye);
+    DocumentReference docRef = firestore.collection('engellenenler').document(engelUye);
     if (uye.rutbe > 15) {
       await docRef.setData({
         'engellenen_id': engelUye,
@@ -117,10 +117,7 @@ class Fonksiyon {
         'engelleyen_id': uye.uid,
       });
 
-      await firestore
-          .collection('uyeler')
-          .document(engelUye)
-          .updateData({'engel': true});
+      await firestore.collection('uyeler').document(engelUye).updateData({'engel': true});
     } else
       await firestore.collection('uyeler').document(engelUye).updateData({
         'sikayetler': FieldValue.arrayUnion([uye.uid])
@@ -146,8 +143,7 @@ class Fonksiyon {
     @required String klasor,
   }) async {
     File compressedFile;
-    ImageProperties properties =
-        await FlutterNativeImage.getImageProperties(file.path);
+    ImageProperties properties = await FlutterNativeImage.getImageProperties(file.path);
     compressedFile = await FlutterNativeImage.compressImage(
       file.path,
       quality: 80,
@@ -174,8 +170,7 @@ class Fonksiyon {
     }
   }
 
-  static void resmiGor(BuildContext context, String resimUrl, baslik,
-      [String altbaslik]) {
+  static void resmiGor(BuildContext context, String resimUrl, baslik, [String altbaslik]) {
     Widget resim = CachedNetworkImage(
       imageUrl: resimUrl ?? Linkler.thumbResim,
       placeholder: (context, url) => Center(
@@ -295,8 +290,7 @@ class Fonksiyon {
     @required String klasor,
   }) async {
     File compressedFile;
-    ImageProperties properties =
-        await FlutterNativeImage.getImageProperties(file.path);
+    ImageProperties properties = await FlutterNativeImage.getImageProperties(file.path);
     compressedFile = await FlutterNativeImage.compressImage(
       file.path,
       quality: 80,
@@ -370,14 +364,10 @@ class Fonksiyon {
         body: jsonEncode(mapBody),
         encoding: Encoding.getByName('utf-8'),
       );
-      Logger.log(tag,
-          message: "cevap kodu: ${res.statusCode} cevap: ${res.body}");
+      Logger.log(tag, message: "cevap kodu: ${res.statusCode} cevap: ${res.body}");
       Logger.log(tag, message: res.body);
 
-      await Firestore.instance
-          .collection('bildirimler')
-          .add(_bil.toMap())
-          .then((onValue) {
+      await Firestore.instance.collection('bildirimler').add(_bil.toMap()).then((onValue) {
         Firestore.instance
             .collection('bildirimler')
             .document(onValue.documentID)

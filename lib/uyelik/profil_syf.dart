@@ -1,27 +1,23 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_native_image/flutter_native_image.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:hive/hive.dart';
+import 'package:delillerleislamiyet/anasayfa/hikayeler/hikaye_ekle_giris.dart';
+import 'package:delillerleislamiyet/anasayfa/hikayeler/hikayeler.dart';
 import 'package:delillerleislamiyet/anasayfa/tabs/akis_sayfasi/akis_veri_ekle.dart';
 import 'package:delillerleislamiyet/anasayfa/tabs/akis_sayfasi/widgets/akis_veri_widget.dart';
+import 'package:delillerleislamiyet/ayarlar/ayarlar.dart';
 import 'package:delillerleislamiyet/model/akis_veri_model.dart';
 import 'package:delillerleislamiyet/model/kullanici.dart';
 import 'package:delillerleislamiyet/utils/fonksiyonlar.dart';
-import 'package:delillerleislamiyet/utils/linkler.dart';
-import 'package:delillerleislamiyet/utils/logger.dart';
 import 'package:delillerleislamiyet/utils/renkler.dart';
 import 'package:delillerleislamiyet/utils/yazilar.dart';
 import 'package:delillerleislamiyet/uyelik/arkadas_listesi.dart';
 import 'package:delillerleislamiyet/uyelik/profile_item.dart';
+import 'package:delillerleislamiyet/uyelik/widgets/arkadaslar_widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
 
 class ProfilSyf extends StatefulWidget {
   @override
@@ -30,7 +26,6 @@ class ProfilSyf extends StatefulWidget {
 
 class _ProfilSyfState extends State<ProfilSyf> {
   final String tag = Yazi.profilSayfasi;
-  final TextEditingController _editingController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Firestore _db = Firestore.instance;
   final ScrollController _scrollController = ScrollController();
@@ -39,7 +34,6 @@ class _ProfilSyfState extends State<ProfilSyf> {
   Uye user;
   File _file;
 
-  bool _rYukleniyor = false;
   bool _gittim = false;
   List<AkisVeri> _akisVeri = [];
   DocumentSnapshot sonDoc;
@@ -48,61 +42,7 @@ class _ProfilSyfState extends State<ProfilSyf> {
 
   double _sY = 0;
   double _sO = 0;
-  bool _ark = false;
-  bool _istek = false;
-  _degistir(String s) {
-    _editingController.text = user.toMap()[s];
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          content: TextFormField(
-            controller: _editingController,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: s,
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("İptal"),
-            ),
-            FlatButton(
-              onPressed: () {
-                if (s == "referans" && _editingController.text.length != 6) {
-                  Fonksiyon.mesajGoster(
-                    _scaffoldKey,
-                    "Lütfen referans kodunu 6 hane olacak şekilde girin!",
-                  );
-                } else {
-                  Map use = user.toMap();
-                  use[s] = _editingController.text;
-                  user = Uye.fromMap(use);
 
-                  Logger.log(tag, message: "$user");
-                  Navigator.pop(context);
-                  if (!_gittim) setState(() {});
-                }
-              },
-              child: Text("Onay"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future _resimSec() async {
-    _rYukleniyor = true;
-    if (!_gittim) setState(() {});
-
-    _file = await FilePicker.getFile(type: FileType.image);
-    _rYukleniyor = false;
-    if (!_gittim) setState(() {});
-  }
 /* 
   _konumSecimiYap(LatLng ll) async {
     Map adrs = await Fonksiyon.adresbul(ll.latitude, ll.longitude);
@@ -124,182 +64,27 @@ class _ProfilSyfState extends State<ProfilSyf> {
     if (!_gittim) setState(() {});
   } */
 
-  Future profiliGuncelle() async {
-    _rYukleniyor = true;
-    if (!_gittim) setState(() {});
-
-    StorageReference storageRef;
-
-    if (_file != null) {
-      storageRef = FirebaseStorage.instance.ref().child(
-            "profilresimleri/${Random().nextInt(10000000).toString()}.jpg",
-          );
-      File compressedFile;
-      ImageProperties properties = await FlutterNativeImage.getImageProperties(_file.path);
-      compressedFile = await FlutterNativeImage.compressImage(
-        _file.path,
-        quality: 80,
-        targetWidth: 500,
-        targetHeight: (properties.height * 600 / properties.width).round(),
-      );
-
-      if (storageRef != null) {
-        final StorageUploadTask uploadTask = storageRef.putFile(
-          compressedFile,
-          StorageMetadata(
-            contentType: "image/jpg",
+  _resimAc(String resim) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.all(0),
+          content: Container(
+            color: Renk.siyah,
+            child: Image.network(
+              resim,
+              fit: BoxFit.contain,
+            ),
           ),
         );
-        final StorageTaskSnapshot downloadUrl = (await uploadTask.onComplete);
-        if (user.resim != Linkler.thumbResim) {
-          //  resimSil(user.resim);
-        }
-        user.resim = (await downloadUrl.ref.getDownloadURL());
-        kullaniciGuncelle();
-        Logger.log(tag, message: 'URL Is ${user.resim}');
-      }
-    } else {
-      kullaniciGuncelle();
-    }
-    _rYukleniyor = false;
-    if (!_gittim) setState(() {});
-  }
-
-/*   resimSil(String res) {
-    RegExp desen = RegExp("profilresimleri%2F(.*?).jpg");
-    Match ma = desen.firstMatch(res);
-
-    FirebaseStorage.instance
-        .ref()
-        .child('profilresimleri/${ma.group(1)}.jpg')
-        .delete()
-        .whenComplete(() {
-      Logger.log(tag, message: "eşleşen: ${ma.group(1)}");
-    });
-  } */
-
-  kullaniciGuncelle() {
-    Firestore.instance.collection('uyeler').document(user.uid).updateData(user.toMap()).whenComplete(() {
-      Fonksiyon.uye = user;
-      _rYukleniyor = false;
-      _kutu.put('kullanici', user.toMap());
-      _scaffoldKey.currentState.showSnackBar(
-        SnackBar(content: Text('İşleminiz başarıyla gerçekleşti.')),
-      );
-      if (!_gittim) setState(() {});
-    });
-    FirebaseAuth.instance.currentUser().then((u) {
-      UserUpdateInfo updateInfo = UserUpdateInfo();
-      updateInfo.displayName = user.gorunenIsim;
-      updateInfo.photoUrl = user.resim;
-      u.updateProfile(updateInfo);
-    });
+      },
+    );
   }
 
   secim(List s) {
     user.ilgiAlanlari = s;
     //if (!_gittim) setState(() {});
-  }
-
-  Future<void> _signOut(BuildContext context) async {
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-
-    try {
-      await FirebaseAuth.instance.signOut();
-      bool googleSignedIn = await googleSignIn.isSignedIn();
-      if (googleSignedIn) {
-        await googleSignIn.disconnect();
-        await googleSignIn.signOut();
-      }
-
-      Fonksiyon.uye = null;
-      _kutu.delete('kullanici');
-    } catch (e) {
-      Logger.log(tag, message: e.toString());
-    }
-  }
-
-  Future _hesabiSil() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) {
-        String isim = "";
-        bool siliniyor = false;
-        return StatefulBuilder(
-          builder: (_, setstate) {
-            return AlertDialog(
-              title: Text("Hesap Silme Uyarısı"),
-              content: IntrinsicHeight(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      "Hesabınızı silmeniz halinde sunucularımızdaki tüm hesap bilgileriniz silinecektir. Hesabınızı silme işlemini onaylamak için soluk metni kutucuğa yazın.",
-                    ),
-                    SizedBox(height: 8.0),
-                    TextField(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: Fonksiyon.seoYap(user.gorunenIsim),
-                      ),
-                      onChanged: (v) => setstate(() => isim = v),
-                    ),
-                  ],
-                ),
-              ),
-              actions: <Widget>[
-                if (!siliniyor)
-                  FlatButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text("İptal"),
-                  ),
-                if (!siliniyor)
-                  FlatButton(
-                    onPressed: isim == Fonksiyon.seoYap(user.gorunenIsim)
-                        ? () {
-                            setstate(() => siliniyor = true);
-                            Logger.log(tag, message: "Silme işlemi başladı");
-                            Future.delayed(Duration(seconds: 4)).whenComplete(
-                              () => setstate(() => siliniyor = false),
-                            );
-                            Firestore.instance
-                                .collection('silinen_kullanicilar')
-                                .document(user.uid)
-                                .setData(user.toMap())
-                                .whenComplete(() {
-                              Firestore.instance
-                                  .collection('kullanicilar')
-                                  .document(user.uid)
-                                  .delete()
-                                  .whenComplete(() {
-                                setstate(() => siliniyor = false);
-                                Navigator.pop(context);
-                                _signOut(context).whenComplete(() {
-                                  _kutu.delete('kullanici');
-
-                                  Navigator.popUntil(
-                                    context,
-                                    ModalRoute.withName('/'),
-                                  );
-                                });
-                              });
-                            });
-                          }
-                        : null,
-                    child: Text("Hesabı Sil"),
-                  ),
-                if (siliniyor)
-                  SizedBox(
-                    width: double.maxFinite,
-                    child: LinearProgressIndicator(),
-                  )
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 
   Future _giris() async {
@@ -319,58 +104,6 @@ class _ProfilSyfState extends State<ProfilSyf> {
     });
   }
 
-/* 
-  var url = "http://malibayram.com/flutterdilillerle/kon.php";
-
-  Future _veriCek() async {
-    var res = await http.get(url);
-    var decodejson = jsonDecode(res.body);
-    SohKonular _so = SohKonular();
-
-    Logger.log(tag, message: decodejson['sohbetler'].length.toString());
-    for (int i = 0; i < decodejson['sohbetler'].length; i++) {
-      _so.konuId = decodejson['sohbetler'][i]['sohbet_id'].toString();
-      _so.konuKitapId =
-          decodejson['sohbetler'][i]['sohbet_kitap_id'].toString();
-      _so.konuBaslik = decodejson['sohbetler'][i]['sohbet_adi'].toString();
-      _so.konuAciklama =
-          decodejson['sohbetler'][i]['sohbet_aciklama'].toString();
-      _so.konuResim = decodejson['sohbetler'][i]['sohbet_resim'].toString();
-      _so.konuEkleyen = Fonksiyon.uye.uid;
-      _so.konuSes = decodejson['sohbetler'][i]['sohbet_ses'].toString();
-      _so.okunma = int.parse(decodejson['sohbetler'][i]['okunma'].toString());
-      _so.konuTarih = Timestamp.now();
-
-      Logger.log(tag,
-          message: decodejson['sohbetler'][i]['kitap_id'].toString());
-
-      QuerySnapshot qs = await Firestore.instance
-          .collection('sohbet_kitaplari')
-          .where('kitap_id', isEqualTo: _so.konuKitapId)
-          .getDocuments();
-      for (DocumentSnapshot ds in qs.documents) {
-        await Firestore.instance
-            .collection('sohbet_kitaplari')
-            .document(ds.documentID)
-            .collection('sohbetler')
-            .add(_so.toMap());
-      }
-    }
-
-    /*  QuerySnapshot qs =
-        await Firestore.instance.collection('akis_verileri').getDocuments();
-
-    for (DocumentSnapshot ds in qs.documents) {
-      Logger.log(tag, message: 'bittii' + ds.documentID);
-      await Firestore.instance
-          .collection('akis_verileri')
-          .document(ds.documentID)
-          .updateData({'resim': ''});
-    } */
-
-    // Firestore.instance.collection('akis_verileri').add(data);
-  }
- */
   Future _makaleGetir() async {
     setState(() => _islem = true);
     QuerySnapshot qs;
@@ -408,6 +141,7 @@ class _ProfilSyfState extends State<ProfilSyf> {
   @override
   void initState() {
     _giris();
+
     _makaleGetir();
     _scrollController.addListener(() {
       _sO = _scrollController.offset;
@@ -436,6 +170,18 @@ class _ProfilSyfState extends State<ProfilSyf> {
           key: _scaffoldKey,
           appBar: AppBar(
             title: Text("${Yazi.profilSayfasi}"),
+            actions: <Widget>[
+              IconButton(
+                  icon: Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => Ayarlar(
+                                  yenile: _giris,
+                                )));
+                  })
+            ],
             /* actions: <Widget>[
               IconButton(
                 onPressed: () async {
@@ -470,7 +216,7 @@ class _ProfilSyfState extends State<ProfilSyf> {
           body: user == null
               ? Center(child: CircularProgressIndicator())
               : Container(
-                  color: Renk.gGri12,
+                  color: Renk.beyaz,
                   height: double.maxFinite,
                   child: SingleChildScrollView(
                     controller: _scrollController,
@@ -478,71 +224,178 @@ class _ProfilSyfState extends State<ProfilSyf> {
                     child: Column(
                       children: <Widget>[
                         Container(
-                          width: double.maxFinite,
-                          color: Renk.wp,
-                          child: Padding(
-                            padding: const EdgeInsets.all(28.0),
-                            child: Column(
-                              children: <Widget>[
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(minWidth: 20),
-                                  child: InkWell(
-                                    onTap: () {
-                                      _degistir("gorunen_isim");
-                                    },
-                                    child: Stack(
-                                      alignment: Alignment.bottomCenter,
-                                      children: <Widget>[
-                                        Text(
-                                          "${user.gorunenIsim}",
+                          height: 275,
+                          margin: EdgeInsets.only(bottom: 10),
+                          child: Stack(
+                            children: <Widget>[
+                              Column(
+                                children: <Widget>[
+                                  Card(
+                                    elevation: 10,
+                                    margin: EdgeInsets.only(top: 10, right: 10, left: 10),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            topRight: Radius.circular(20), topLeft: Radius.circular(20))),
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      height: 200,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: Renk.wpKoyu,
+                                        borderRadius: BorderRadius.only(
+                                            topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+                                        /*  image: DecorationImage(
+                                            image: NetworkImage(
+                                              user.resim,
+                                            ),
+                                            fit: BoxFit.fill), */
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(bottom: 50.0),
+                                        child: Text(
+                                          user.gorunenIsim,
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                            color: Renk.beyaz,
-                                            fontSize: 26.0,
-                                            fontWeight: FontWeight.w500,
+                                              fontSize: MediaQuery.of(context).size.width / 20, color: Renk.beyaz),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    /*  padding: EdgeInsets.all(12.0),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        stops: [0.3, 0.7],
+                                        colors: [
+                                          Renk.wp,
+                                          Renk.gGri9,
+                                        ],
+                                      ),
+                                    ), */
+
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Column(
+                                            children: <Widget>[
+                                              Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Container(
+                                                  margin: EdgeInsets.only(bottom: 0),
+                                                  child: Text(
+                                                    "Gönderiler",
+                                                    style: TextStyle(
+                                                      color: Renk.wpKoyu,
+                                                      fontSize: Fonksiyon.ekran.width / 28,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                  child: Text(
+                                                user.gonderiSayisi.toString(),
+                                                style: TextStyle(
+                                                  color: Renk.siyah,
+                                                  fontSize: Fonksiyon.ekran.width / 26,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              )),
+                                            ],
                                           ),
                                         ),
-                                        Container(
-                                          color: Colors.black54,
-                                          child: Icon(
-                                            Icons.edit,
-                                            size: 14,
-                                            color: Renk.beyaz,
+                                        Spacer(),
+                                        Expanded(
+                                          child: InkWell(
+                                            onTap: () => Navigator.push(
+                                                context, MaterialPageRoute(builder: (_) => ArkadasListesi())),
+                                            child: Column(
+                                              children: <Widget>[
+                                                Padding(
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: Container(
+                                                    margin: EdgeInsets.only(bottom: 0),
+                                                    child: Text(
+                                                      "Arkadaşlar",
+                                                      style: TextStyle(
+                                                        color: Renk.wpKoyu,
+                                                        fontSize: Fonksiyon.ekran.width / 28,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  child: Text(
+                                                    user.arkadaslar.length.toString(),
+                                                    style: TextStyle(
+                                                      color: Renk.siyah,
+                                                      fontSize: Fonksiyon.ekran.width / 26,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                ),
-                                InkWell(
-                                  onTap: () => _degistir("unvan"),
-                                  child: Stack(
-                                    alignment: Alignment.bottomCenter,
-                                    children: <Widget>[
-                                      Text(
-                                        "${user.unvan}",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
+                                ],
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: MediaQuery.of(context).size.width / 2 - 75,
+                                child: Stack(
+                                  children: <Widget>[
+                                    InkWell(
+                                      onTap: () {
+                                        _resimAc(user.resim);
+                                      },
+                                      child: Container(
+                                        height: 150,
+                                        width: 150,
+                                        padding: EdgeInsets.all(5.0),
+                                        decoration: BoxDecoration(
                                           color: Renk.beyaz,
-                                          fontSize: 18.0,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Renk.gGri,
+                                              blurRadius: 10.0,
+                                            ),
+                                          ],
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: ClipOval(
+                                          child: _file == null
+                                              ? CachedNetworkImage(
+                                                  imageUrl: user.resim,
+                                                  placeholder: (context, url) => CircularProgressIndicator(),
+                                                  errorWidget: (context, url, error) => Icon(Icons.error),
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : Image.file(_file, fit: BoxFit.cover),
                                         ),
                                       ),
-                                      Container(
-                                        color: Colors.black54,
-                                        child: Icon(
-                                          Icons.edit,
-                                          size: 10,
-                                          color: Renk.beyaz,
-                                        ),
+                                    ),
+                                    /*  Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: Container(
+                                        alignment: Alignment.bottomCenter,
+                                        child: IconButton(icon: Icon(Icons.photo_camera), onPressed: null),
                                       ),
-                                    ],
-                                  ),
+                                    ) */
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                        Container(
+                        /*  Container(
                           padding: EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -662,7 +515,8 @@ class _ProfilSyfState extends State<ProfilSyf> {
                               ),
                             ],
                           ),
-                        ),
+                        ), */
+
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24.0),
                           child: FutureBuilder(
@@ -797,7 +651,7 @@ class _ProfilSyfState extends State<ProfilSyf> {
                                 ),
                               ),
                             ),
-                            Container(
+                            /*  Container(
                               width: double.maxFinite,
                               margin: EdgeInsets.symmetric(horizontal: 8),
                               child: MaterialButton(
@@ -816,7 +670,8 @@ class _ProfilSyfState extends State<ProfilSyf> {
                                         style: TextStyle(color: Renk.beyaz),
                                       ),
                               ),
-                            ),
+                            ), */
+
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
@@ -825,21 +680,23 @@ class _ProfilSyfState extends State<ProfilSyf> {
                                     child: Container(
                                       margin: const EdgeInsets.only(right: 8.0),
                                       child: FlatButton(
-                                        color: Renk.wp,
+                                        color: Renk.wpKoyu,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) => HikayeEkleGiris()));
+                                        },
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: <Widget>[
                                             Icon(
-                                              FontAwesomeIcons.plusCircle,
+                                              Icons.settings,
                                               color: Renk.beyaz,
                                               size: MediaQuery.of(context).size.width /
                                                   (MediaQuery.of(context).size.width / 18),
                                             ),
                                             SizedBox(width: 5),
                                             Text(
-                                              'Hikayene Ekleme Yap',
+                                              'Hikaye Ayarları',
                                               style: TextStyle(
                                                 color: Renk.beyaz,
                                               ),
@@ -849,7 +706,7 @@ class _ProfilSyfState extends State<ProfilSyf> {
                                       ),
                                     ),
                                   ),
-                                  FlatButton(
+                                  /*  FlatButton(
                                     padding: EdgeInsets.all(0),
                                     color: Renk.gGri.withOpacity(0.2),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -860,26 +717,11 @@ class _ProfilSyfState extends State<ProfilSyf> {
                                       size:
                                           MediaQuery.of(context).size.width / (MediaQuery.of(context).size.width / 18),
                                     ),
-                                  ),
+                                  ), */
                                 ],
                               ),
                             ),
-                            Container(
-                              width: double.maxFinite,
-                              margin: EdgeInsets.symmetric(horizontal: 8),
-                              child: FlatButton(
-                                color: Renk.beyaz,
-                                shape: RoundedRectangleBorder(
-                                    side: BorderSide(color: Renk.wpKoyu, width: 2),
-                                    borderRadius: BorderRadius.circular(10)),
-                                onPressed: () =>
-                                    Navigator.push(context, MaterialPageRoute(builder: (_) => ArkadasListesi())),
-                                child: Text(
-                                  'Arkadaş Listesi',
-                                  style: TextStyle(color: Renk.wpKoyu),
-                                ),
-                              ),
-                            ),
+                            IntrinsicHeight(child: ArkadaslarWidgets()),
                             SizedBox(height: 12.0),
                             Container(
                               margin: EdgeInsets.symmetric(horizontal: 8),
@@ -962,22 +804,9 @@ class _ProfilSyfState extends State<ProfilSyf> {
                               ),
                             ),
                             SizedBox(height: 12.0),
-                            /*  
-
-                          hesabı sil kısmı taşınacak
-                          
-                           FlatButton(
-                              onPressed: _hesabiSil,
-                              child: Text(
-                                "Hesabımı Sil",
-                                style: TextStyle(
-                                  color: Renk.gKirmizi,
-                                  fontSize: Fonksiyon.ekran.width / 26,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                            Divider(
+                              color: Renk.gGri.withOpacity(0.7),
                             ),
-                            SizedBox(height: 24.0), */
                             InkWell(
                               onTap: () {
                                 Navigator.push(
@@ -1037,20 +866,23 @@ class _ProfilSyfState extends State<ProfilSyf> {
                               ),
                             ),
                             SizedBox(height: 12.0),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                for (int i = 0; i < _akisVeri.length; i++)
-                                  AkisVeriWidget(
-                                    veri: _akisVeri[i],
-                                    scaffoldKey: _scaffoldKey,
-                                  ),
-                                if (_akisVeri.length < 1)
-                                  Container(
-                                    child: Text('Henuz bişey paylaşılmadı'),
-                                  )
-                              ],
+                            Container(
+                              color: Renk.gGri.withOpacity(0.7),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  for (int i = 0; i < _akisVeri.length; i++)
+                                    AkisVeriWidget(
+                                      veri: _akisVeri[i],
+                                      scaffoldKey: _scaffoldKey,
+                                    ),
+                                  if (_akisVeri.length < 1)
+                                    Container(
+                                      child: Text('Henuz bişey paylaşılmadı'),
+                                    )
+                                ],
+                              ),
                             ),
                             _islem
                                 ? Center(

@@ -3,15 +3,17 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:delillerleislamiyet/model/akis_veri_model.dart';
 import 'package:delillerleislamiyet/utils/fonksiyonlar.dart';
 import 'package:delillerleislamiyet/utils/logger.dart';
 import 'package:delillerleislamiyet/utils/renkler.dart';
 import 'package:delillerleislamiyet/utils/yazilar.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AkisVeriEkle extends StatefulWidget {
   final AkisVeri akisVeri;
@@ -31,7 +33,8 @@ class _AkisVeriEkleState extends State<AkisVeriEkle> {
   AkisVeri _akisVeri;
   File _file;
   bool _bas = true;
-
+  bool _inProcess = false;
+  final picker = ImagePicker();
   bool _rYukleniyor = false;
   int _seviyeIndex = 0;
 
@@ -47,20 +50,94 @@ class _AkisVeriEkleState extends State<AkisVeriEkle> {
     {7: "Reddiyeler"},
     {8: "Genel"},
   ];
-  Future _resimSec() async {
-    _rYukleniyor = true;
-    setState(() {});
-
-    await FilePicker.getFile(type: FileType.image).then((onValue) {
-      if (onValue != null) {
-        Logger.log(tag, message: onValue.path);
-        _file = onValue;
-        setState(() {});
-      }
+  _resimSec(ImageSource source) async {
+    Logger.log(tag, message: 'geldi');
+    setState(() {
+      _inProcess = true;
     });
+    final pickedFile = await picker.getImage(source: source);
 
-    _rYukleniyor = false;
-    setState(() {});
+    if (pickedFile != null) {
+      File croppedFile = await ImageCropper.cropImage(
+          sourcePath: pickedFile.path,
+          aspectRatioPresets: [
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9
+          ],
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+              toolbarTitle: 'Delillerle İslamiyet',
+              toolbarColor: Renk.wp,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: false),
+          iosUiSettings: IOSUiSettings(
+            minimumAspectRatio: 1.0,
+          ));
+      if (croppedFile != null)
+        setState(() {
+          _file = croppedFile;
+
+          _inProcess = false;
+        });
+      else
+        setState(() {
+          _inProcess = false;
+        });
+    } else {
+      setState(() {
+        _inProcess = false;
+      });
+    }
+  }
+
+  void _cameraGalery() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          content: Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  color: Renk.wp,
+                  child: IconButton(
+                    icon: Icon(
+                      FontAwesomeIcons.images,
+                      color: Renk.beyaz,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _resimSec(ImageSource.gallery);
+                    },
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  color: Renk.wpAcik,
+                  child: IconButton(
+                    icon: Icon(
+                      FontAwesomeIcons.camera,
+                      color: Renk.beyaz,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+
+                      _resimSec(ImageSource.camera);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future _kayitYap() async {
@@ -241,183 +318,195 @@ class _AkisVeriEkleState extends State<AkisVeriEkle> {
                     ),
             ],
           ),
-          body: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              autovalidate: _autoValidate,
-              child: Container(
-                padding: EdgeInsets.all(24.0),
-                child: Column(
-                  children: <Widget>[
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Container(
-                        height: Fonksiyon.ekran.width / 3,
-                        width: Fonksiyon.ekran.width,
-                        padding: EdgeInsets.all(0.0),
-                        decoration: BoxDecoration(
-                          color: Renk.gGri12,
-                          image: DecorationImage(
-                            image: _file == null
-                                ? CachedNetworkImageProvider(
-                                    _akisVeri.resim == ''
-                                        ? 'https://img.icons8.com/carbon-copy/2x/camera.png'
-                                        : _akisVeri.resim,
-                                  )
-                                : FileImage(_file),
-                            fit: _akisVeri.resim == '' ? BoxFit.fitHeight : BoxFit.cover,
-                          ),
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(width: 1.0, color: Renk.gGri19),
-                        ),
-                        child: FlatButton(
-                          onPressed: () {
-                            _resimSec();
-                          },
-                          child: _rYukleniyor ? CircularProgressIndicator() : null,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8.0),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Başlığın',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: Fonksiyon.ekran.width / 20,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
-                      ),
-                    ),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFEAEBEC)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFEAEBEC)),
-                        ),
-                        fillColor: Renk.beyaz,
-                        filled: true,
-                        contentPadding: const EdgeInsets.all(12.0),
-                        hintText: 'Birşeyler yaz...',
-                      ),
-                      keyboardType: TextInputType.text,
-                      onSaved: (deg) {
-                        _akisVeri.baslik = deg;
-                      },
-                      initialValue: _akisVeri.baslik,
-                      validator: bosKontrol,
-                    ),
-                    SizedBox(height: 8.0),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Makalen / Yazın',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: Fonksiyon.ekran.width / 20,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
-                      ),
-                    ),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFEAEBEC)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFEAEBEC)),
-                        ),
-                        fillColor: Renk.beyaz,
-                        filled: true,
-                        contentPadding: const EdgeInsets.all(12.0),
-                        hintText: "Makaleni yaz...",
-                      ),
-                      keyboardType: TextInputType.text,
-                      onSaved: (deg) {
-                        _akisVeri.aciklama = deg;
-                      },
-                      initialValue: _akisVeri.aciklama,
-                      maxLines: 8,
-                      validator: bosKontrol,
-                    ),
-                    Row(
+          body: Stack(
+            children: <Widget>[
+              SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  autovalidate: _autoValidate,
+                  child: Container(
+                    padding: EdgeInsets.all(24.0),
+                    child: Column(
                       children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            "Yazı Kategori: ",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: Fonksiyon.ekran.width / 24,
-                              color: Color(0xFF333333),
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Container(
+                            height: 210.0,
+                            width: Fonksiyon.ekran.width,
+                            padding: EdgeInsets.all(0.0),
+                            decoration: BoxDecoration(
+                              color: Renk.gGri12,
+                              image: DecorationImage(
+                                image: _file == null
+                                    ? CachedNetworkImageProvider(
+                                        _akisVeri.resim == ''
+                                            ? 'https://img.icons8.com/carbon-copy/2x/camera.png'
+                                            : _akisVeri.resim,
+                                      )
+                                    : FileImage(_file),
+                                fit: _akisVeri.resim == '' ? BoxFit.contain : BoxFit.contain,
+                              ),
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(width: 1.0, color: Renk.gGri19),
+                            ),
+                            child: FlatButton(
+                              onPressed: () {
+                                _cameraGalery();
+                              },
+                              child: _rYukleniyor ? CircularProgressIndicator() : null,
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: DropdownButton(
-                            isExpanded: true,
-                            value: _akisVeri.id != null
-                                ? _kategoriler[int.parse(_akisVeri.kategori) - 1]
-                                : _kategoriler[_seviyeIndex],
-                            items: [
-                              for (Map m in _kategoriler)
-                                DropdownMenuItem(
-                                  child: Container(
-                                      width: double.maxFinite,
-                                      color: _kategoriler[int.parse(_akisVeri.kategori) - 1] == m
-                                          ? Renk.gGri12
-                                          : Renk.beyaz,
-                                      child: Text(m.values.first)),
-                                  value: m,
-                                ),
-                            ],
-                            onChanged: (Map v) {
-                              _seviyeIndex = _kategoriler.indexOf(v);
-                              _akisVeri.kategori = _kategoriler[_seviyeIndex].keys.first.toString();
-
-                              setState(() {});
-                            },
+                        SizedBox(height: 8.0),
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Başlık',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: Fonksiyon.ekran.width / 20,
+                                color: Color(0xFF333333),
+                              ),
+                            ),
                           ),
                         ),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Color(0xFFEAEBEC)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Color(0xFFEAEBEC)),
+                            ),
+                            fillColor: Renk.beyaz,
+                            filled: true,
+                            contentPadding: const EdgeInsets.all(12.0),
+                            hintText: 'yaz...',
+                          ),
+                          keyboardType: TextInputType.text,
+                          onSaved: (deg) {
+                            _akisVeri.baslik = deg;
+                          },
+                          initialValue: _akisVeri.baslik,
+                          validator: bosKontrol,
+                        ),
+                        SizedBox(height: 8.0),
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Ne düşünüyorsun?',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: Fonksiyon.ekran.width / 20,
+                                color: Color(0xFF333333),
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Color(0xFFEAEBEC)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Color(0xFFEAEBEC)),
+                            ),
+                            fillColor: Renk.beyaz,
+                            filled: true,
+                            contentPadding: const EdgeInsets.all(12.0),
+                            hintText: "yaz...",
+                          ),
+                          keyboardType: TextInputType.text,
+                          onSaved: (deg) {
+                            _akisVeri.aciklama = deg;
+                          },
+                          initialValue: _akisVeri.aciklama,
+                          maxLines: 8,
+                          validator: bosKontrol,
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                "Yazı Kategori: ",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: Fonksiyon.ekran.width / 24,
+                                  color: Color(0xFF333333),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: DropdownButton(
+                                isExpanded: true,
+                                value: _akisVeri.id != null
+                                    ? _kategoriler[int.parse(_akisVeri.kategori) - 1]
+                                    : _kategoriler[_seviyeIndex],
+                                items: [
+                                  for (Map m in _kategoriler)
+                                    DropdownMenuItem(
+                                      child: Container(
+                                          width: double.maxFinite,
+                                          color: _kategoriler[int.parse(_akisVeri.kategori) - 1] == m
+                                              ? Renk.gGri12
+                                              : Renk.beyaz,
+                                          child: Text(m.values.first)),
+                                      value: m,
+                                    ),
+                                ],
+                                onChanged: (Map v) {
+                                  _seviyeIndex = _kategoriler.indexOf(v);
+                                  _akisVeri.kategori = _kategoriler[_seviyeIndex].keys.first.toString();
+
+                                  setState(() {});
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20.0),
+                        /*  Container(
+                          width: double.maxFinite,
+                          child: RaisedButton(
+                            onPressed: () {
+                             
+                              _validateInputs();
+                            },
+                            color: Renk.wpKoyu,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: _isleniyor
+                                  ? CircularProgressIndicator()
+                                  : Text(
+                                      Yazi.gTalebiGonder,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: Fonksiyon.ekran.width / 20,
+                                        color: Renk.beyaz,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ), */
                       ],
                     ),
-                    SizedBox(height: 20.0),
-                    /*  Container(
-                      width: double.maxFinite,
-                      child: RaisedButton(
-                        onPressed: () {
-                         
-                          _validateInputs();
-                        },
-                        color: Renk.wpKoyu,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: _isleniyor
-                              ? CircularProgressIndicator()
-                              : Text(
-                                  Yazi.gTalebiGonder,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: Fonksiyon.ekran.width / 20,
-                                    color: Renk.beyaz,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ), */
-                  ],
+                  ),
                 ),
               ),
-            ),
+              _inProcess
+                  ? Container(
+                      height: MediaQuery.of(context).size.height * 0.98,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : Center()
+            ],
           ),
         ),
       ),

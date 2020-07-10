@@ -10,9 +10,9 @@ import 'package:delillerleislamiyet/yeni_grup/yeni_grup_detay.dart';
 class GrupWidget extends StatelessWidget {
   final Grup grup;
   final Box kutu;
+  final Function yenile;
 
-  const GrupWidget({Key key, @required this.grup, @required this.kutu})
-      : super(key: key);
+  const GrupWidget({Key key, @required this.grup, @required this.kutu, this.yenile}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final double genislik = Fonksiyon.ekran.width;
@@ -26,11 +26,15 @@ class GrupWidget extends StatelessWidget {
       },
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (c) {
-          return YeniGrupDetay(grup: grup, kutu: kutu);
+          return YeniGrupDetay(
+            grup: grup,
+            kutu: kutu,
+            yenile: yenile,
+          );
         }));
       },
       child: Container(
-        margin: EdgeInsets.all(12.0),
+        margin: grup.katilimcilar.contains(Fonksiyon.uye.uid) ? EdgeInsets.all(5.0) : EdgeInsets.all(12.0),
         child: Column(
           children: <Widget>[
             ClipRRect(
@@ -41,11 +45,9 @@ class GrupWidget extends StatelessWidget {
                     height: genislik / 4,
                     alignment: Alignment.center,
                     child: CachedNetworkImage(
-                      
                       width: genislik / 2,
                       imageUrl: grup.resim ?? Linkler.grupThumbResim,
-                      placeholder: (context, url) =>
-                          CircularProgressIndicator(),
+                      placeholder: (context, url) => CircularProgressIndicator(),
                       errorWidget: (context, url, error) => Icon(Icons.error),
                       fit: BoxFit.cover,
                     ),

@@ -1,6 +1,6 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:delillerleislamiyet/uyelik/arkadas_listesi.dart';
 import 'package:flutter/material.dart';
 import 'package:delillerleislamiyet/anasayfa/tabs/akis_sayfasi/widgets/akis_veri_widget.dart';
 import 'package:delillerleislamiyet/model/akis_veri_model.dart';
@@ -38,6 +38,24 @@ class _ProfilSyfExState extends State<ProfilSyfEx> {
   bool _istek = false;
   bool gittim = false;
 
+  _resimAc(String resim) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.all(0),
+          content: Container(
+            color: Renk.siyah,
+            //  height: MediaQuery.of(context).size.height - 50,
+            child: Image.network(
+              resim,
+              fit: BoxFit.contain,
+            ),
+          ),
+        );
+      },
+    );
+  }
   /*  _degistir(String s) {
     _editingController.text = user.toMap()[s];
     showDialog(
@@ -368,26 +386,31 @@ class _ProfilSyfExState extends State<ProfilSyfEx> {
                                     ],
                                   ),
                                 ),
-                                Container(
-                                  height: 150,
-                                  width: 150,
-                                  padding: EdgeInsets.all(5.0),
-                                  decoration: BoxDecoration(
-                                    color: Renk.beyaz,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Renk.gGri,
-                                        blurRadius: 10.0,
+                                InkWell(
+                                  onTap: () {
+                                    _resimAc(_uye.resim);
+                                  },
+                                  child: Container(
+                                    height: 150,
+                                    width: 150,
+                                    padding: EdgeInsets.all(5.0),
+                                    decoration: BoxDecoration(
+                                      color: Renk.beyaz,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Renk.gGri,
+                                          blurRadius: 10.0,
+                                        ),
+                                      ],
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: ClipOval(
+                                      child: CachedNetworkImage(
+                                        imageUrl: _uye.resim,
+                                        placeholder: (context, url) => CircularProgressIndicator(),
+                                        errorWidget: (context, url, error) => Icon(Icons.error),
+                                        fit: BoxFit.cover,
                                       ),
-                                    ],
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: ClipOval(
-                                    child: CachedNetworkImage(
-                                      imageUrl: _uye.resim,
-                                      placeholder: (context, url) => CircularProgressIndicator(),
-                                      errorWidget: (context, url, error) => Icon(Icons.error),
-                                      fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),

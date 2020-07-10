@@ -2,17 +2,19 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:delillerleislamiyet/animasyon/kaydirma.dart';
+import 'package:delillerleislamiyet/kfcdrawer/class_builder.dart';
 import 'package:delillerleislamiyet/kfcdrawer/kf_drawer_menu.dart';
 import 'package:delillerleislamiyet/model/kullanici.dart';
 import 'package:delillerleislamiyet/utils/fonksiyonlar.dart';
 import 'package:delillerleislamiyet/utils/logger.dart';
 import 'package:delillerleislamiyet/utils/renkler.dart';
 import 'package:delillerleislamiyet/uyelik/giris.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class UyeKontrol extends StatefulWidget {
   @override
@@ -31,6 +33,9 @@ class _UyeKontrolState extends State<UyeKontrol> with RouteAware {
   bool _bas = true;
 
   _girisKontrol() async {
+    await Hive.initFlutter('delilerleislamiyet');
+    ClassBuilder.registerClasses();
+    Logger.log(tag, message: 'Hive acıldı');
     await FirebaseAuth.instance.currentUser();
     _kutu = await Hive.openBox('kayitaraci');
     _kutu.watch(key: 'kullanici').listen((onData) {
@@ -53,21 +58,28 @@ class _UyeKontrolState extends State<UyeKontrol> with RouteAware {
       if (user != null) {
         await _uyeEslestir(user.uid);
       }
+    } else {
+      //  _kullaniciCek(Fonksiyon.uye.uid);
     }
 
-    await Future.delayed(Duration(milliseconds: 500));
+    //  await Future.delayed(Duration(milliseconds: 500));
 
     _cevapGeldi = true;
     Logger.log(tag, message: _kutu.get('kullanici').toString());
     setState(() {});
   }
 
+  /*  _kullaniciCek(String id) async {
+    await FireDB.firestore.collection('uyeler').document(id).get().then((value) {
+      Fonksiyon.temaRengi = value.data['temaRengi'] ?? 4279405694;
+    });
+  } */
+
   _uyeEslestir(String useruid) async {
     Logger.log(tag, message: "uyeEslestir useruid: $useruid");
 
     try {
-      DocumentSnapshot ds =
-          await Firestore.instance.collection('uyeler').document(useruid).get();
+      DocumentSnapshot ds = await Firestore.instance.collection('uyeler').document(useruid).get();
 
       Logger.log(tag, message: "uyeEslestir DocumentSnapshot: ${ds.data}");
       _kutu.put('kullanici', Uye.fromMap(ds.data).toMap());
@@ -88,10 +100,7 @@ class _UyeKontrolState extends State<UyeKontrol> with RouteAware {
       if (user?.phoneNumber != null) {
         Fonksiyon.uye.telefon = user.phoneNumber;
         Fonksiyon.uye.telOnay = true;
-        await _db
-            .collection('uyler')
-            .document(Fonksiyon.uye.uid)
-            .updateData(Fonksiyon.uye.toMap());
+        await _db.collection('uyler').document(Fonksiyon.uye.uid).updateData(Fonksiyon.uye.toMap());
 
         _kutu.put('kullanici', Fonksiyon.uye.toMap());
       }
@@ -125,8 +134,7 @@ class _UyeKontrolState extends State<UyeKontrol> with RouteAware {
     );
   }
 
-  Future _bildirimCalistir(Map<String, dynamic> message,
-      [bool onmesaj = false]) async {
+  Future _bildirimCalistir(Map<String, dynamic> message, [bool onmesaj = false]) async {
     Map data = message['data'];
 
     switch (data['tip']) {
@@ -256,10 +264,6 @@ class _UyeKontrolState extends State<UyeKontrol> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    return _cevapGeldi
-        ? _kutu.get('kullanici') == null
-            ? GirisYapSyf(kutu: _kutu)
-            : KfDrawerMenu()
-        : _s;
+    return _cevapGeldi ? _kutu.get('kullanici') == null ? GirisYapSyf(kutu: _kutu) : KfDrawerMenu() : _s;
   }
 }

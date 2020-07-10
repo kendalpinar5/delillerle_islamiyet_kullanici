@@ -30,6 +30,7 @@ class _AkisSayfasiState extends State<AkisSayfasi> {
   final ScrollController _scrollController = ScrollController();
   List _hikayeler = [];
   List _sozler = [];
+  bool _gittim = false;
 
   List _akisVeri = [];
   DocumentSnapshot sonDoc;
@@ -55,38 +56,11 @@ class _AkisSayfasiState extends State<AkisSayfasi> {
     }
 
     _kutu.put('gunun_sozu', _sozler);
-    setState(() {});
+    if (!_gittim) setState(() {});
   }
 
   Future _hikayeGetir() async {
-    QuerySnapshot qs;
-    if (Fonksiyon.uye.arkadaslar != null) if (sonDoc == null) {
-      qs = await _db
-          .collection('hikayeler')
-          .where('onay', isEqualTo: true)
-          .where('ekleyen', whereIn: Fonksiyon.uye.arkadaslar ?? '')
-          .orderBy('tarih', descending: true)
-          .limit(5)
-          .getDocuments();
-    } else {
-      qs = await _db
-          .collection('hikayeler')
-          .where('onay', isEqualTo: true)
-          .where('ekleyen', whereIn: Fonksiyon.uye.arkadaslar ?? '')
-          .orderBy('tarih', descending: true)
-          .startAfterDocument(sonDoc)
-          .limit(5)
-          .getDocuments();
-    }
-
-    Logger.log('gelen hikaye sayisi', message: qs.documents.length.toString());
-    if (qs.documents.isNotEmpty) sonDoc = qs.documents.last;
-
-    for (DocumentSnapshot ds in qs.documents) {
-      if (ds.exists)
-        _hikayeler.add(ds.data.map((key, value) =>
-            key == 'tarih' ? MapEntry(key, (value as Timestamp).millisecondsSinceEpoch) : MapEntry(key, value)));
-    }
+    _hikayeler = [];
 
     QuerySnapshot benQs = await _db
         .collection('hikayeler')
@@ -96,13 +70,32 @@ class _AkisSayfasiState extends State<AkisSayfasi> {
 
     for (DocumentSnapshot benDs in benQs.documents) {
       if (benDs.exists) {
+        Logger.log(tag, message: benDs.data.toString());
+
         _hikayeler.add(benDs.data.map((key, value) =>
             key == 'tarih' ? MapEntry(key, (value as Timestamp).millisecondsSinceEpoch) : MapEntry(key, value)));
       }
     }
 
+    if (Fonksiyon.uye.arkadaslar != null && Fonksiyon.uye.arkadaslar.length > 0) {
+      QuerySnapshot qs = await _db
+          .collection('hikayeler')
+          .where('onay', isEqualTo: true)
+          .where('ekleyen', whereIn: Fonksiyon.uye.arkadaslar ?? [])
+          .orderBy('tarih', descending: true)
+          .getDocuments();
+      Logger.log('gelen hikaye sayisi', message: qs.documents.length.toString());
+
+      for (DocumentSnapshot ds in qs.documents) {
+        if (ds.exists)
+          _hikayeler.add(ds.data.map((key, value) =>
+              key == 'tarih' ? MapEntry(key, (value as Timestamp).millisecondsSinceEpoch) : MapEntry(key, value)));
+      }
+    }
+
     _kutu.put('hikayeler', _hikayeler);
-    setState(() {});
+    Logger.log(tag, message: _kutu.get('hikayeler', defaultValue: []).toString());
+    if (!_gittim) setState(() {});
   }
 
   Future _makaleGetir() async {
@@ -135,7 +128,7 @@ class _AkisSayfasiState extends State<AkisSayfasi> {
 
     Logger.log('fonksiyon', message: _kutu.get('akisVerileri', defaultValue: []).toString());
 
-    setState(() => _islem = false);
+    if (!_gittim) setState(() => _islem = false);
   }
 
   yenile() {
@@ -143,11 +136,12 @@ class _AkisSayfasiState extends State<AkisSayfasi> {
     sonDoc = null;
     _kutu.put('akisVerileri', null);
     _makaleGetir();
-    setState(() {});
+    if (!_gittim) setState(() {});
   }
 
   @override
   void dispose() {
+    _gittim = true;
     super.dispose();
   }
 
@@ -170,14 +164,13 @@ class _AkisSayfasiState extends State<AkisSayfasi> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Renk.gGri12,
+      backgroundColor: Renk.siyah.withOpacity(0.3),
       body: RefreshIndicator(
         backgroundColor: Renk.wpAcik,
         color: Renk.beyaz,
         onRefresh: () async {
           _hikayeGetir();
           sozleriGetir();
-
           _makaleGetir();
           Logger.log(tag, message: 'yenıledi');
         },
@@ -196,6 +189,24 @@ class _AkisSayfasiState extends State<AkisSayfasi> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
+                    ValueListenableBuilder(
+                        valueListenable: _kutu.listenable(keys: ['gunun_sozu']),
+                        builder: (context, box, widget) {
+                          List _soz = box.get('gunun_sozu', defaultValue: []);
+                          return Column(
+                            children: <Widget>[
+                              for (int i = 0; i < _soz.length; i++)
+                                SozWidget(
+                                    soz: Soz.fromJson(_soz[i]
+                                        .map((k, v) => k == 'tarih'
+                                            ? MapEntry(k, Timestamp.fromMillisecondsSinceEpoch(v))
+                                            : MapEntry(k, v))
+                                        .cast<String, dynamic>()),
+                                    scaffoldKey: _scaffoldKey)
+                            ],
+                          );
+                        }),
+
                     ValueListenableBuilder(
                         valueListenable: _kutu.listenable(keys: ['hikayeler']),
                         builder: (context, box, widget) {
@@ -248,24 +259,6 @@ class _AkisSayfasiState extends State<AkisSayfasi> {
                         ),
                       ),
                     ),
-
-                    ValueListenableBuilder(
-                        valueListenable: _kutu.listenable(keys: ['gunun_sozu']),
-                        builder: (context, box, widget) {
-                          List _soz = box.get('gunun_sozu', defaultValue: []);
-                          return Column(
-                            children: <Widget>[
-                              for (int i = 0; i < _soz.length; i++)
-                                SozWidget(
-                                    soz: Soz.fromJson(_soz[i]
-                                        .map((k, v) => k == 'tarih'
-                                            ? MapEntry(k, Timestamp.fromMillisecondsSinceEpoch(v))
-                                            : MapEntry(k, v))
-                                        .cast<String, dynamic>()),
-                                    scaffoldKey: _scaffoldKey)
-                            ],
-                          );
-                        }),
 
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,

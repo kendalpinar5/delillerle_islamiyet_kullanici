@@ -15,12 +15,14 @@ class YeniGrupDetay extends StatefulWidget {
   final Grup grup;
   final Box kutu;
   final bool onaydan;
+  final Function yenile;
 
   const YeniGrupDetay({
     Key key,
     @required this.grup,
     this.kutu,
     this.onaydan = false,
+    this.yenile,
   }) : super(key: key);
   @override
   _YeniGrupDetayState createState() => _YeniGrupDetayState();
@@ -65,6 +67,7 @@ class _YeniGrupDetayState extends State<YeniGrupDetay> {
       });
 
       _katiliyor = true;
+      if (widget.yenile != null) widget.yenile();
     } else {
       Fonksiyon.mesajGoster(_scaffoldKey, Yazi.sayiBasarisiz);
     }
@@ -77,8 +80,7 @@ class _YeniGrupDetayState extends State<YeniGrupDetay> {
     _grup = widget.grup;
 
     if (widget.grup.baslik == null) {
-      DocumentSnapshot ds =
-          await _firestore.collection('gruplar').document(_grup.id).get();
+      DocumentSnapshot ds = await _firestore.collection('gruplar').document(_grup.id).get();
       _grup = Grup.fromMap(ds.data, ds.documentID);
     }
 
@@ -169,7 +171,11 @@ class _YeniGrupDetayState extends State<YeniGrupDetay> {
                       ),
                   ],
                 ),
-                endDrawer: YeniGrupEndDrawer(grup: _grup, kutu: _kutu),
+                endDrawer: YeniGrupEndDrawer(
+                  grup: _grup,
+                  kutu: _kutu,
+                  yenile: widget.yenile,
+                ),
               );
             }
             return Scaffold(body: Center(child: CircularProgressIndicator()));

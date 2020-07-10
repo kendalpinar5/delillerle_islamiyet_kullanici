@@ -14,9 +14,9 @@ import 'package:delillerleislamiyet/utils/renkler.dart';
 class YeniGrupEndDrawer extends StatefulWidget {
   final Grup grup;
   final Box kutu;
+  final Function yenile;
 
-  const YeniGrupEndDrawer({Key key, @required this.grup, @required this.kutu})
-      : super(key: key);
+  const YeniGrupEndDrawer({Key key, @required this.grup, @required this.kutu, this.yenile}) : super(key: key);
   @override
   _YeniGrupEndDrawerState createState() => _YeniGrupEndDrawerState();
 }
@@ -66,10 +66,7 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
   Future _getProfile(String uid) async {
     Map uyeMap = _box.get(uid);
     if (uyeMap == null) {
-      DocumentSnapshot ds = await Firestore.instance
-          .collection('uyeler')
-          .document(uid)
-          .get();
+      DocumentSnapshot ds = await Firestore.instance.collection('uyeler').document(uid).get();
       if (ds.exists) {
         _box.put(ds.documentID, HamUye.fromJson(ds.data).toJson());
         uyeMap = _box.get(uid);
@@ -84,10 +81,7 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
         String kisim2 = l.getRange((l.length / 2).floor(), l.length).join(' ');
 
         if (kisim1 == kisim2) {
-          Firestore.instance
-              .collection('uyeler')
-              .document(uid)
-              .updateData({'gorunen_isim': kisim1});
+          Firestore.instance.collection('uyeler').document(uid).updateData({'gorunen_isim': kisim1});
           hUye.gorunenIsim = kisim1;
           _box.put(hUye.uid, hUye.toJson());
         }
@@ -120,10 +114,7 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
 
     _grup.katilimcisayisi = "${_grup.katilimcilar.length}";
 
-    await Firestore.instance
-        .collection('gruplar')
-        .document(_grup.id)
-        .updateData({
+    await Firestore.instance.collection('gruplar').document(_grup.id).updateData({
       'katilimcilar': FieldValue.arrayRemove([id]),
       'sesliler': FieldValue.arrayRemove([bildirimID]),
       'sessizler': FieldValue.arrayRemove([bildirimID]),
@@ -140,13 +131,10 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
       Fonksiyon.uye.gruplar = gruplar;
       _kayitAraci.put('kullanici', Fonksiyon.uye.toMap());
 
-      Firestore.instance
-          .collection('uyeler')
-          .document(Fonksiyon.uye.uid)
-          .updateData({
+      Firestore.instance.collection('uyeler').document(Fonksiyon.uye.uid).updateData({
         'gruplar': FieldValue.arrayRemove([_grup.id])
       });
-
+      if(widget.yenile !=null) widget.yenile();
       Navigator.pop(context);
       Navigator.pop(context);
     }
@@ -165,8 +153,7 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
     _baslangicIslemleri();
 
     _scrollController.addListener(() {
-      if (_scrollController.offset >
-          _scrollController.position.viewportDimension) {
+      if (_scrollController.offset > _scrollController.position.viewportDimension) {
         if (!_yukariButton && !_gittim) setState(() => _yukariButton = true);
       } else {
         if (_yukariButton && !_gittim) setState(() => _yukariButton = false);
@@ -193,9 +180,7 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
         children: <Widget>[
           NotificationListener<ScrollNotification>(
             onNotification: (ScrollNotification scrollInfo) {
-              if (scrollInfo.metrics.pixels + 50 >
-                      scrollInfo.metrics.maxScrollExtent &&
-                  !_dipMi) {
+              if (scrollInfo.metrics.pixels + 50 > scrollInfo.metrics.maxScrollExtent && !_dipMi) {
                 _dipMi = true;
                 if (!_gittim) setState(() {});
                 _dahaFazla();
@@ -252,13 +237,8 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
                           _isleniyor
                               ? Center(child: CircularProgressIndicator())
                               : Column(
-                                  children: _veri
-                                      .getRange(
-                                          0,
-                                          _veri.length < 30
-                                              ? _veri.length
-                                              : aktifSayi + 30)
-                                      .map((f) {
+                                  children:
+                                      _veri.getRange(0, _veri.length < 30 ? _veri.length : aktifSayi + 30).map((f) {
                                     Logger.log(tag, message: "${_veri.length}");
                                     bool ssIs = false;
                                     return StatefulBuilder(
@@ -389,9 +369,7 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
                               ),
                               Wrap(
                                 children: <Widget>[
-                                  for (String a
-                                      in _grup.anahtarkelimeler.split(','))
-                                    Text("#${a.trim()} "),
+                                  for (String a in _grup.anahtarkelimeler.split(',')) Text("#${a.trim()} "),
                                 ],
                               ),
                               Container(
@@ -412,28 +390,22 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
                                     Spacer(),
                                     Switch(
                                       activeColor: Renk.gKirmizi,
-                                      value: _grup.sesliler
-                                              .contains(Fonksiyon.fcmToken) ||
-                                          _grup.sessizler
-                                              .contains(Fonksiyon.fcmToken),
+                                      value: _grup.sesliler.contains(Fonksiyon.fcmToken) ||
+                                          _grup.sessizler.contains(Fonksiyon.fcmToken),
                                       onChanged: (v) {
                                         Logger.log(tag, message: v.toString());
 
                                         Map<String, dynamic> m = {
                                           'sessizler': v
-                                              ? FieldValue.arrayUnion(
-                                                  [Fonksiyon.fcmToken])
-                                              : FieldValue.arrayRemove(
-                                                  [Fonksiyon.fcmToken]),
+                                              ? FieldValue.arrayUnion([Fonksiyon.fcmToken])
+                                              : FieldValue.arrayRemove([Fonksiyon.fcmToken]),
                                         };
                                         if (v) {
                                           _sessizler.add(Fonksiyon.fcmToken);
                                         } else {
                                           _sessizler.remove(Fonksiyon.fcmToken);
                                           _sesliler.remove(Fonksiyon.fcmToken);
-                                          m['sesliler'] =
-                                              FieldValue.arrayRemove(
-                                                  [Fonksiyon.fcmToken]);
+                                          m['sesliler'] = FieldValue.arrayRemove([Fonksiyon.fcmToken]);
                                         }
                                         _grup.sessizler = _sessizler;
                                         _grup.sesliler = _sesliler;
@@ -468,8 +440,7 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
                                       Spacer(),
                                       Switch(
                                         activeColor: Renk.gKirmizi,
-                                        value: _grup.sesliler
-                                            .contains(Fonksiyon.fcmToken),
+                                        value: _grup.sesliler.contains(Fonksiyon.fcmToken),
                                         onChanged: (v) {
                                           if (v) {
                                             _sesliler.add(Fonksiyon.fcmToken);
@@ -480,20 +451,13 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
                                           }
                                           _grup.sessizler = _sessizler;
                                           _grup.sesliler = _sesliler;
-                                          Firestore.instance
-                                              .collection('gruplar')
-                                              .document(_grup.id)
-                                              .updateData({
+                                          Firestore.instance.collection('gruplar').document(_grup.id).updateData({
                                             'sesliler': v
-                                                ? FieldValue.arrayUnion(
-                                                    [Fonksiyon.fcmToken])
-                                                : FieldValue.arrayRemove(
-                                                    [Fonksiyon.fcmToken]),
+                                                ? FieldValue.arrayUnion([Fonksiyon.fcmToken])
+                                                : FieldValue.arrayRemove([Fonksiyon.fcmToken]),
                                             'sessizler': !v
-                                                ? FieldValue.arrayUnion(
-                                                    [Fonksiyon.fcmToken])
-                                                : FieldValue.arrayRemove(
-                                                    [Fonksiyon.fcmToken]),
+                                                ? FieldValue.arrayUnion([Fonksiyon.fcmToken])
+                                                : FieldValue.arrayRemove([Fonksiyon.fcmToken]),
                                           }).whenComplete(() {
                                             if (!_gittim) setState(() {});
                                           });
@@ -520,9 +484,7 @@ class _YeniGrupEndDrawerState extends State<YeniGrupEndDrawer> {
               child: Center(
                 child: FloatingActionButton(
                   onPressed: _scrollToBottom,
-                  child: _dipMi
-                      ? CircularProgressIndicator(backgroundColor: Renk.beyaz)
-                      : Icon(Icons.arrow_upward),
+                  child: _dipMi ? CircularProgressIndicator(backgroundColor: Renk.beyaz) : Icon(Icons.arrow_upward),
                 ),
               ),
             ),
@@ -549,14 +511,10 @@ class MySliverAppBar extends SliverPersistentHeaderDelegate {
   final String resim;
   final String baslik;
 
-  MySliverAppBar(
-      {@required this.expandedHeight,
-      @required this.resim,
-      @required this.baslik});
+  MySliverAppBar({@required this.expandedHeight, @required this.resim, @required this.baslik});
 
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Stack(
       fit: StackFit.expand,
       overflow: Overflow.visible,

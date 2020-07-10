@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:delillerleislamiyet/anasayfa/tabs/akis_sayfasi/akis_veri_ekle.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:delillerleislamiyet/anasayfa/tabs/akis_sayfasi/widgets/akis_benzer_widget.dart';
@@ -18,8 +19,9 @@ import 'package:share/share.dart';
 class AkisDetay extends StatefulWidget {
   final AkisVeri gVeri;
   final Uye gUye;
+  final Function yenile;
 
-  const AkisDetay({Key key, this.gVeri, this.gUye}) : super(key: key);
+  const AkisDetay({Key key, this.gVeri, this.gUye, this.yenile}) : super(key: key);
   @override
   _AkisDetayState createState() => _AkisDetayState();
 }
@@ -40,6 +42,24 @@ class _AkisDetayState extends State<AkisDetay> {
     {7: "Reddiyeler"},
     {8: "Genel"},
   ];
+
+  _resimAc(String resim) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.all(0),
+          content: Container(
+            color: Renk.siyah,
+            child: Image.network(
+              resim,
+              fit: BoxFit.contain,
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Future ekle() async {
     showDialog(
@@ -157,8 +177,20 @@ class _AkisDetayState extends State<AkisDetay> {
     return querySnapshot.documents.map((d) => AkisVeriYorum.fromMap(d.data)).toList();
   }
 
-  Future veriGuncelle() async {
+  Future veriGuncelle(String neOldu) async {
     await _db.collection('akis_verileri').document(_veri.id).updateData(_veri.toMap());
+    if (_dUye.bildirimjetonu != '' && _dUye.bildirimjetonu != null && _dUye.uid != Fonksiyon.uye.uid)
+      Fonksiyon.bildirimGonder(
+          alici: _veri.ekleyen,
+          gonderen: Fonksiyon.uye.uid,
+          tur: 'veri_tepki',
+          baslik: 'Gönderide hareketlenme',
+          mesaj: '${Fonksiyon.uye.gorunenIsim} senin ${_veri.baslik} yazını $neOldu',
+          bBaslik: 'Gönderide hareketlenme',
+          bMesaj: '${Fonksiyon.uye.gorunenIsim} senin ${_veri.baslik} yazını $neOldu',
+          jeton: [_dUye.bildirimjetonu]);
+
+    if (widget.yenile != null) widget.yenile();
     setState(() {});
   }
 
@@ -227,13 +259,18 @@ class _AkisDetayState extends State<AkisDetay> {
                 Stack(
                   children: <Widget>[
                     _veri.resim != "" || _veri.resim == null
-                        ? Container(
-                            width: double.maxFinite,
-                            height: 200.0,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                fit: BoxFit.fitWidth,
-                                image: NetworkImage(_veri.resim),
+                        ? InkWell(
+                            onTap: () {
+                              _resimAc(_veri.resim);
+                            },
+                            child: Container(
+                              width: double.maxFinite,
+                              height: 200.0,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  fit: BoxFit.fitWidth,
+                                  image: NetworkImage(_veri.resim),
+                                ),
                               ),
                             ),
                           )
@@ -243,129 +280,6 @@ class _AkisDetayState extends State<AkisDetay> {
                   ],
                 ),
 
-                _veri.resim != "" || _veri.resim == null
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                Container(
-                                  margin: EdgeInsets.only(left: 10.0),
-                                  child: Icon(
-                                    FontAwesomeIcons.comments,
-                                    size: 20.0,
-                                    color: Renk.gGri.withOpacity(0.8),
-                                  ),
-                                ),
-                                Container(
-                                  alignment: Alignment.center,
-                                  margin: EdgeInsets.only(left: 5.0),
-                                  child: Text(
-                                    "${_veri.cevapSayisi}",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Renk.gGri.withOpacity(0.8),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          FlatButton(
-                            textColor: Colors.black54,
-                            onPressed: () async {
-                              await Share.share(
-                                  "${_veri.baslik == '' ? 'Konu başlığı yok' : _veri.baslik}\n${_veri.aciklama == '' ? 'Konu detayı yok' : _veri.aciklama}");
-                              _veri.paylasanlar.add(Fonksiyon.uye.uid);
-                              await veriGuncelle();
-                              Logger.log('tag', message: "soz paylaşıldı");
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(
-                                  FontAwesomeIcons.share,
-                                  size: 20,
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 5.0),
-                                  child: Text(
-                                    "${_veri.paylasanlar.length}",
-                                    style: TextStyle(
-                                      color: Renk.gGri65,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          FlatButton(
-                            textColor: Colors.black54,
-                            onPressed: () {
-                              if (!Fonksiyon.begenenVeriler.contains(_veri.id)) if (!Fonksiyon.begenmeyenVeriler
-                                  .contains(_veri.id)) {
-                                _veri.begenmeyenler.add(Fonksiyon.uye.uid);
-                                veriGuncelle();
-
-                                Fonksiyon.begenmeyenVeriler.add(_veri.id);
-                              }
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(
-                                  Icons.thumb_down,
-                                  size: 20.0,
-                                  color: Fonksiyon.begenmeyenVeriler.contains(_veri.id) ? Renk.wpAcik : Renk.gGri65,
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 5.0),
-                                  child: Text(
-                                    "${_veri.begenmeyenler.length}",
-                                    style: TextStyle(
-                                      color: Fonksiyon.begenmeyenVeriler.contains(_veri.id) ? Renk.wpAcik : Renk.gGri65,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          FlatButton(
-                            textColor: Colors.black54,
-                            onPressed: () {
-                              if (!Fonksiyon.begenmeyenVeriler.contains(_veri.id)) if (!Fonksiyon.begenenVeriler
-                                  .contains(_veri.id)) {
-                                _veri.begenenler.add(Fonksiyon.uye.uid);
-                                veriGuncelle();
-                                Fonksiyon.begenenVeriler.add(_veri.id);
-                              }
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(
-                                  Icons.thumb_up,
-                                  size: 20.0,
-                                  color: Fonksiyon.begenenVeriler.contains(_veri.id) ? Renk.wpAcik : Renk.gGri65,
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 5.0),
-                                  child: Text(
-                                    "${_veri.begenenler.length}",
-                                    style: TextStyle(
-                                      color: Fonksiyon.begenenVeriler.contains(_veri.id) ? Renk.wpAcik : Renk.gGri65,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      )
-                    : Container(),
                 IntrinsicHeight(
                   child: Card(
                     child: Container(
@@ -393,8 +307,8 @@ class _AkisDetayState extends State<AkisDetay> {
                                     ? Center(child: CircularProgressIndicator())
                                     : Container(
                                         margin: EdgeInsets.all(8.0),
-                                        width: 30.0,
-                                        height: 30.0,
+                                        width: 38.0,
+                                        height: 38.0,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           image: DecorationImage(
@@ -424,27 +338,58 @@ class _AkisDetayState extends State<AkisDetay> {
                                                 style: TextStyle(color: Colors.black, fontWeight: FontWeight.normal),
                                               ),
                                             ),
+                                      Container(
+                                        margin: EdgeInsets.only(),
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          "${Fonksiyon.zamanFarkiBul(_veri.tarih.toDate())} önce",
+                                          style: TextStyle(
+                                              color: Renk.gGri.withOpacity(0.8),
+                                              fontStyle: FontStyle.normal,
+                                              fontSize: 12),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
-                                Container(
-                                  color: Renk.wpKoyu,
-                                  alignment: Alignment.center,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: Text(
-                                      _kategoriler[int.parse(_veri.kategori) - 1]
-                                          .values
-                                          .toString()
-                                          .replaceAll('(', '')
-                                          .replaceAll(')', ''),
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 13.0,
-                                          fontStyle: FontStyle.italic,
-                                          fontWeight: FontWeight.bold),
+                                Row(
+                                  children: <Widget>[
+                                    Container(
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                          color: Renk.wp.withOpacity(0.6),
+                                          borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(50), bottomLeft: Radius.circular(50))),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Text(
+                                          _kategoriler[int.parse(_veri.kategori) - 1]
+                                              .values
+                                              .toString()
+                                              .replaceAll('(', '')
+                                              .replaceAll(')', ''),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13.0,
+                                              fontStyle: FontStyle.italic,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    if (_veri.ekleyen == Fonksiyon.uye.uid)
+                                      Container(
+                                        child: IconButton(
+                                            icon: Icon(FontAwesomeIcons.solidEdit),
+                                            onPressed: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (_) => AkisVeriEkle(
+                                                            akisVeri: _veri,
+                                                          )));
+                                            }),
+                                      )
+                                  ],
                                 )
                               ],
                             ),
@@ -465,7 +410,10 @@ class _AkisDetayState extends State<AkisDetay> {
                                       child: Text(
                                         _veri.baslik,
                                         textAlign: TextAlign.center,
-                                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: MediaQuery.of(context).size.width / 26),
                                       ),
                                     ),
                               _veri.aciklama == ''
@@ -480,9 +428,9 @@ class _AkisDetayState extends State<AkisDetay> {
                                           child: Text(
                                             _veri.aciklama,
                                             style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.normal,
-                                            ),
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.normal,
+                                                fontSize: MediaQuery.of(context).size.width / 24),
                                           ),
                                         ),
                                       ],
@@ -497,51 +445,129 @@ class _AkisDetayState extends State<AkisDetay> {
                                 child: Container(
                                   margin: EdgeInsets.only(left: 5.0, top: 5.0),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: <Widget>[
-                                      Container(
-                                        margin: EdgeInsets.only(left: 5.0),
-                                        child: Text(
-                                          _veri.okunma.toString(),
-                                          style: TextStyle(
-                                              color: Renk.gGri.withOpacity(0.8),
-                                              fontStyle: FontStyle.normal,
-                                              fontSize: 13),
+                                      InkWell(
+                                        onTap: () {
+                                          //  _settingModalBottomSheet(context);
+                                        },
+                                        child: Row(
+                                          children: <Widget>[
+                                            Container(
+                                              margin: EdgeInsets.only(left: 5.0),
+                                              child: Text(
+                                                _veri.okunma.toString(),
+                                                style: TextStyle(
+                                                    color: Renk.gGri.withOpacity(0.8),
+                                                    fontStyle: FontStyle.normal,
+                                                    fontSize: 13),
+                                              ),
+                                            ),
+                                            Container(
+                                              margin: EdgeInsets.only(left: 5.0),
+                                              child: Text(
+                                                'görüntülenme',
+                                                style: TextStyle(
+                                                    color: Renk.gGri.withOpacity(0.8),
+                                                    fontStyle: FontStyle.normal,
+                                                    fontSize: 12),
+                                              ),
+                                            ),
+                                            if (_veri.begenenler.length > 0)
+                                              Container(
+                                                alignment: Alignment.center,
+                                                margin: EdgeInsets.only(left: 5.0),
+                                                child: Text(
+                                                  '-',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: Colors.black87,
+                                                    fontStyle: FontStyle.normal,
+                                                  ),
+                                                ),
+                                              ),
+                                            if (_veri.begenenler.length > 0)
+                                              Container(
+                                                margin: EdgeInsets.only(left: 5.0),
+                                                child: Text(
+                                                  "${_veri.begenenler.length}",
+                                                  style: TextStyle(
+                                                      color: Renk.gGri.withOpacity(0.8),
+                                                      fontStyle: FontStyle.normal,
+                                                      fontSize: 13),
+                                                ),
+                                              ),
+                                            if (_veri.begenenler.length > 0)
+                                              Container(
+                                                margin: EdgeInsets.only(left: 5.0),
+                                                child: Text(
+                                                  'beğenme',
+                                                  style: TextStyle(
+                                                      color: Renk.gGri.withOpacity(0.8),
+                                                      fontStyle: FontStyle.normal,
+                                                      fontSize: 12),
+                                                ),
+                                              ),
+                                          ],
                                         ),
                                       ),
-                                      Container(
-                                        margin: EdgeInsets.only(left: 5.0),
-                                        child: Text(
-                                          'görüntülenme',
-                                          style: TextStyle(
-                                              color: Renk.gGri.withOpacity(0.8),
-                                              fontStyle: FontStyle.normal,
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                      Container(
-                                        alignment: Alignment.center,
-                                        margin: EdgeInsets.only(left: 5.0),
-                                        child: Text(
-                                          '-',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: Colors.black87,
-                                            fontStyle: FontStyle.normal,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: EdgeInsets.only(left: 5.0, top: 3.0),
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          "${Fonksiyon.zamanFarkiBul(_veri.tarih.toDate())} önce",
-                                          style: TextStyle(
-                                              color: Renk.gGri.withOpacity(0.8),
-                                              fontStyle: FontStyle.normal,
-                                              fontSize: 12),
-                                        ),
-                                      ),
+                                      Row(
+                                        children: <Widget>[
+                                          if (_veri.cevapSayisi > 0)
+                                            Container(
+                                              alignment: Alignment.center,
+                                              margin: EdgeInsets.only(left: 8.0),
+                                              child: Text(
+                                                "${_veri.cevapSayisi}",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(color: Renk.gGri.withOpacity(0.8), fontSize: 13),
+                                              ),
+                                            ),
+                                          if (_veri.cevapSayisi > 0)
+                                            Container(
+                                              alignment: Alignment.center,
+                                              margin: EdgeInsets.only(right: 8.0, left: 3),
+                                              child: Text(
+                                                "Yorum",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(color: Renk.gGri.withOpacity(0.8), fontSize: 12),
+                                              ),
+                                            ),
+                                          if (_veri.paylasanlar.length > 0 && _veri.cevapSayisi > 0)
+                                            Container(
+                                              alignment: Alignment.center,
+                                              margin: EdgeInsets.only(left: 5.0),
+                                              child: Text(
+                                                '-',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: Colors.black87,
+                                                  fontStyle: FontStyle.normal,
+                                                ),
+                                              ),
+                                            ),
+                                          if (_veri.paylasanlar.length > 0)
+                                            Container(
+                                              alignment: Alignment.center,
+                                              margin: EdgeInsets.only(left: 8.0),
+                                              child: Text(
+                                                "${_veri.paylasanlar.length}",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(color: Renk.gGri.withOpacity(0.8), fontSize: 13),
+                                              ),
+                                            ),
+                                          if (_veri.paylasanlar.length > 0)
+                                            Container(
+                                              alignment: Alignment.center,
+                                              margin: EdgeInsets.only(right: 8.0, left: 3),
+                                              child: Text(
+                                                "Paylaşan",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(color: Renk.gGri.withOpacity(0.8), fontSize: 12),
+                                              ),
+                                            )
+                                        ],
+                                      )
                                     ],
                                   ),
                                 ),
@@ -560,26 +586,94 @@ class _AkisDetayState extends State<AkisDetay> {
                             mainAxisSize: MainAxisSize.max,
                             children: <Widget>[
                               Expanded(
+                                child: FlatButton(
+                                  textColor: Colors.black54,
+                                  onPressed: () {
+                                    if (!Fonksiyon.begenmeyenVeriler.contains(_veri.id)) if (!Fonksiyon.begenenVeriler
+                                        .contains(_veri.id)) {
+                                      _veri.begenenler.add(Fonksiyon.uye.uid);
+
+                                      veriGuncelle('beğendi');
+                                      Fonksiyon.begenenVeriler.add(_veri.id);
+                                    }
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(
+                                        FontAwesomeIcons.thumbsUp,
+                                        size: MediaQuery.of(context).size.width / 22,
+                                        color: Fonksiyon.begenenVeriler.contains(_veri.id) ? Renk.wpAcik : Renk.gGri65,
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(left: 5.0),
+                                        child: Text(
+                                          'Beğen',
+                                          style: TextStyle(
+                                              color: Fonksiyon.begenenVeriler.contains(_veri.id)
+                                                  ? Renk.wpAcik
+                                                  : Renk.gGri65,
+                                              fontStyle: FontStyle.normal,
+                                              fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              FlatButton(
+                                textColor: Colors.black54,
+                                onPressed: () {
+                                  if (!Fonksiyon.begenenVeriler.contains(_veri.id)) if (!Fonksiyon.begenmeyenVeriler
+                                      .contains(_veri.id)) {
+                                    _veri.begenmeyenler.add(Fonksiyon.uye.uid);
+                                    veriGuncelle('beğenmedi');
+
+                                    Fonksiyon.begenmeyenVeriler.add(_veri.id);
+                                  }
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(
+                                      FontAwesomeIcons.thumbsDown,
+                                      size: MediaQuery.of(context).size.width / 22,
+                                      color: Fonksiyon.begenmeyenVeriler.contains(_veri.id) ? Renk.wpAcik : Renk.gGri65,
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(left: 5.0),
+                                      child: Text(
+                                        "${_veri.begenmeyenler.length}",
+                                        style: TextStyle(
+                                            color: Fonksiyon.begenmeyenVeriler.contains(_veri.id)
+                                                ? Renk.wpAcik
+                                                : Renk.gGri65,
+                                            fontSize: 12),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Expanded(
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: <Widget>[
                                     Container(
-                                      margin: EdgeInsets.only(left: 5.0),
+                                      margin: EdgeInsets.only(left: 8.0),
                                       child: Icon(
                                         FontAwesomeIcons.comments,
-                                        size: 20.0,
+                                        size: MediaQuery.of(context).size.width / 22,
                                         color: Renk.gGri.withOpacity(0.8),
                                       ),
                                     ),
                                     Container(
                                       alignment: Alignment.center,
-                                      margin: EdgeInsets.only(left: 5.0),
+                                      margin: EdgeInsets.only(left: 8.0),
                                       child: Text(
-                                        "${_veri.cevapSayisi}",
+                                        "Yorum Yap",
                                         textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: Renk.gGri.withOpacity(0.8),
-                                        ),
+                                        style: TextStyle(color: Renk.gGri.withOpacity(0.8), fontSize: 12),
                                       ),
                                     )
                                   ],
@@ -591,87 +685,21 @@ class _AkisDetayState extends State<AkisDetay> {
                                   await Share.share(
                                       "${_veri.baslik == '' ? 'Konu başlığı yok' : _veri.baslik}\n${_veri.aciklama == '' ? 'Konu detayı yok' : _veri.aciklama}");
                                   _veri.paylasanlar.add(Fonksiyon.uye.uid);
-                                  await veriGuncelle();
+                                  await veriGuncelle('paylaştı');
                                   Logger.log('tag', message: "soz paylaşıldı");
                                 },
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: <Widget>[
                                     Icon(
-                                      FontAwesomeIcons.share,
-                                      size: 20,
+                                      FontAwesomeIcons.shareAlt,
+                                      size: MediaQuery.of(context).size.width / 22,
                                     ),
                                     Container(
                                       margin: EdgeInsets.only(left: 5.0),
                                       child: Text(
-                                        "${_veri.paylasanlar.length}",
-                                        style: TextStyle(
-                                          color: Renk.gGri65,
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                              FlatButton(
-                                textColor: Colors.black54,
-                                onPressed: () {
-                                  if (!Fonksiyon.begenenVeriler.contains(_veri.id)) if (!Fonksiyon.begenmeyenVeriler
-                                      .contains(_veri.id)) {
-                                    _veri.begenmeyenler.add(Fonksiyon.uye.uid);
-                                    veriGuncelle();
-
-                                    Fonksiyon.begenmeyenVeriler.add(_veri.id);
-                                  }
-                                },
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Icon(
-                                      Icons.thumb_down,
-                                      size: 20.0,
-                                      color: Fonksiyon.begenmeyenVeriler.contains(_veri.id) ? Renk.wpAcik : Renk.gGri65,
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.only(left: 5.0),
-                                      child: Text(
-                                        "${_veri.begenmeyenler.length}",
-                                        style: TextStyle(
-                                          color: Fonksiyon.begenmeyenVeriler.contains(_veri.id)
-                                              ? Renk.wpAcik
-                                              : Renk.gGri65,
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                              FlatButton(
-                                textColor: Colors.black54,
-                                onPressed: () {
-                                  if (!Fonksiyon.begenmeyenVeriler.contains(_veri.id)) if (!Fonksiyon.begenenVeriler
-                                      .contains(_veri.id)) {
-                                    _veri.begenenler.add(Fonksiyon.uye.uid);
-                                    veriGuncelle();
-                                    Fonksiyon.begenenVeriler.add(_veri.id);
-                                  }
-                                },
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Icon(
-                                      Icons.thumb_up,
-                                      size: 20.0,
-                                      color: Fonksiyon.begenenVeriler.contains(_veri.id) ? Renk.wpAcik : Renk.gGri65,
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.only(left: 5.0),
-                                      child: Text(
-                                        "${_veri.begenenler.length}",
-                                        style: TextStyle(
-                                          color:
-                                              Fonksiyon.begenenVeriler.contains(_veri.id) ? Renk.wpAcik : Renk.gGri65,
-                                        ),
+                                        "Paylaş",
+                                        style: TextStyle(color: Renk.gGri65, fontSize: 12),
                                       ),
                                     )
                                   ],

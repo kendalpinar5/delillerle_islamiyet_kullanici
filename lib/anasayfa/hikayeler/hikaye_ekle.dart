@@ -284,10 +284,8 @@ class _HikayeEkleState extends State<HikayeEkle> {
     if (_bas) {
       _hikaye = widget.gHikaye ?? Hikaye();
       _resimler = _hikaye.resim ?? [];
-
       _bas = false;
     }
-
     super.initState();
   }
 

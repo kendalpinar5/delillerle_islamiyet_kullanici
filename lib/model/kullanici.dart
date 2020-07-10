@@ -9,6 +9,7 @@ class Uye {
   String referans = "";
   String telefon;
   String resim;
+  String kapakResim;
   String unvan;
   String element = "Bronz_5";
   String il;
@@ -18,7 +19,8 @@ class Uye {
   int rutbe;
   int puan = 0;
   int gonderiSayisi;
-  bool gizlilik = false;
+  bool gizlilik;
+  int temaRengi;
 
   List arkIstekleri;
   List arkadaslar;
@@ -33,6 +35,7 @@ class Uye {
     @required this.email,
     this.telefon,
     this.resim = Linkler.thumbResim,
+    this.kapakResim = Linkler.thumbResim,
     this.unvan = "unvan",
     this.element = "Bronz_5",
     this.il,
@@ -42,6 +45,8 @@ class Uye {
     this.rutbe = 0,
     this.puan = 0,
     this.gonderiSayisi,
+    this.gizlilik,
+    this.temaRengi,
     this.ilgiAlanlari,
     this.arkIstekleri,
     this.arkadaslar,
@@ -57,6 +62,7 @@ class Uye {
           email: veri['email'],
           telefon: veri['telefon'] ?? '',
           resim: veri['resim'],
+          kapakResim: veri['kapakResim'],
           unvan: veri['unvan'],
           element: veri['element'] ?? "Bronz_5",
           il: veri['il'] ?? "il",
@@ -66,6 +72,8 @@ class Uye {
           rutbe: veri['rutbe'],
           puan: veri['puan'] ?? 0,
           gonderiSayisi: veri['gonderiSayisi'] ?? 0,
+          gizlilik: veri['gizlilik'] ?? false,
+          temaRengi: veri['temaRengi'] ?? 4279405694,
           ilgiAlanlari: veri['ilgialanlari'] ?? [],
           arkIstekleri: veri['arkIstekleri'] ?? [],
           arkadaslar: veri['arkadaslar'] ?? [],
@@ -80,6 +88,7 @@ class Uye {
         'email': this.email,
         'telefon': this.telefon ?? '',
         'resim': this.resim,
+        'kapakResim': this.kapakResim,
         'unvan': this.unvan,
         'element': this.element ?? "Bronz_5",
         'il': this.il ?? "il",
@@ -89,6 +98,8 @@ class Uye {
         'rutbe': this.rutbe,
         'puan': this.puan,
         'gonderiSayisi': this.gonderiSayisi,
+        'gizlilik': this.gizlilik ?? false,
+        'temaRengi': this.temaRengi ?? 4279405694,
         'ilgialanlari': this.ilgiAlanlari ?? [],
         'arkIstekleri': this.arkIstekleri ?? [],
         'arkadaslar': this.arkadaslar ?? [],

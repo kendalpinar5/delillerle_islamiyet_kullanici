@@ -1,9 +1,5 @@
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:delillerleislamiyet/model/kullanici.dart';
 import 'package:delillerleislamiyet/utils/fonksiyonlar.dart';
 import 'package:delillerleislamiyet/utils/grup.dart';
@@ -11,6 +7,8 @@ import 'package:delillerleislamiyet/utils/linkler.dart';
 import 'package:delillerleislamiyet/utils/logger.dart';
 import 'package:delillerleislamiyet/utils/renkler.dart';
 import 'package:delillerleislamiyet/utils/yazilar.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class GrupDetay extends StatefulWidget {
   @override
@@ -40,7 +38,7 @@ class _GrupDetayState extends State<GrupDetay> {
   bool _gittim = false;
   String docID;
 
-  Future _grubaKatil([String uid]) async {
+  /* Future _grubaKatil([String uid]) async {
     _kIsleniyor = true;
     if (!_gittim) setState(() {});
 
@@ -91,7 +89,7 @@ class _GrupDetayState extends State<GrupDetay> {
     _kIsleniyor = false;
     if (!_gittim) setState(() {});
   }
-
+ */
   Future _gruptenVazgec([String uid]) async {
     _kIsleniyor = true;
     if (!_gittim) setState(() {});
@@ -129,7 +127,7 @@ class _GrupDetayState extends State<GrupDetay> {
     if (!_gittim) setState(() {});
   }
 
-  Future _grubaUyeEkle(String uid, bool katil) async {
+ /*  Future _grubaUyeEkle(String uid, bool katil) async {
     _kIsleniyor = true;
     if (!_gittim) setState(() {});
 
@@ -141,7 +139,7 @@ class _GrupDetayState extends State<GrupDetay> {
     await kullaniciListele();
     _kIsleniyor = false;
     if (!_gittim) setState(() {});
-  }
+  } */
 
   Future getKullanicilar(int limit) async {
     QuerySnapshot qs = await _firestore

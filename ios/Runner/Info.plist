@@ -38,9 +38,12 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Resim eklemek için kameranıza erişim vermeniz gerekiyor...</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Resim eklemek için galerinize erişim vermeniz gerekiyor...</string>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
@@ -60,7 +63,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Resim eklemek için galeriye erişim izni vermeniz gerekiyor</string>
 </dict>
 </plist>

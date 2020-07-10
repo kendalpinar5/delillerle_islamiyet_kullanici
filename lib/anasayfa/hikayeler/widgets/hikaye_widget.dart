@@ -59,7 +59,7 @@ class _HikayeWidgetState extends State<HikayeWidget> {
           width: MediaQuery.of(context).size.width / 3.5,
           decoration: BoxDecoration(
             color: Renk.gGri,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(30),
             image: DecorationImage(
                 image: NetworkImage(
                   resimYok ? 'https://www.teb.org.tr/images/no-photo.png' : widget.gHik.resim[0],
